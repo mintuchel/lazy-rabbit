@@ -2,6 +2,7 @@ import { getConnection } from "../../config/db.js";
 
 export async function findIssuesCreatedAfter(date) {
     const conn = await getConnection();
+
     try {
         const [rows] = await conn.query('SELECT * FROM issues WHERE created_on > ?', [date]);
         return rows;
@@ -16,6 +17,7 @@ export async function findIssuesCreatedAfter(date) {
 
 export async function findOpenIssues() {
     const conn = await getConnection();
+    
     try {
         const [rows] = await conn.query('SELECT * FROM issues WHERE closed_on IS NULL');
         return rows;
