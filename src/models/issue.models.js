@@ -4,7 +4,7 @@ export async function findIssuesCreatedAfter(date) {
     const conn = await getConnection();
 
     try {
-        const [rows] = await conn.query('SELECT * FROM issues WHERE created_on > ?', [date]);
+        const [rows] = await conn.query('SELECT * FROM issues WHERE created_on > ? LIMIT 10', [date]);
         return rows;
     } catch (err) {
         console.error('DB query error:', err);
@@ -19,7 +19,7 @@ export async function findOpenedIssues() {
     const conn = await getConnection();
     
     try {
-        const [rows] = await conn.query('SELECT * FROM issues WHERE closed_on IS NULL');
+        const [rows] = await conn.query('SELECT * FROM issues WHERE closed_on IS NULL LIMIT 10');
         return rows;
     } catch (err) {
         console.error('DB query error:', err);
