@@ -1,6 +1,9 @@
 import { getConnection } from "../../../config/rbmq.js"
+import dotenv from 'dotenv';
 
-const queueName = "email_rpc_queue";
+dotenv.config();
+
+const queueName = process.env.EMAIL_RPC_QUEUE;
 
 export async function recieveEmailRpcMessage(handleMessage) {
     const conn = await getConnection();
