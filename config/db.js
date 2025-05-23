@@ -1,12 +1,15 @@
 import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // mysql2가 mysql보다 더 빠르고 성능 좋고, Promise 지원까지 해줌.
 export const pool = mysql.createPool({
-    host: '121.134.190.80',
-    port: 4406,
-    user: 'root',
-    password: 'development',
-    database: 'redmine',
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
