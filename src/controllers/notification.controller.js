@@ -1,4 +1,4 @@
-import { sendNotification } from "../services/notification.services";
+import { sendNotification } from "../services/notification.services.js";
 
 export async function handleNotification(req, res) {
     // JSON에서 msg 추출

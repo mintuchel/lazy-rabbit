@@ -1,6 +1,6 @@
 import amqp from 'amqplib';
 import { v4 as uuidv4 } from 'uuid';
-import { env } from '../../config';
+import { env } from '../config/index.js';
 
 let connection;
 

@@ -1,5 +1,5 @@
 import mysql from 'mysql2/promise';
-import { env } from '../../config';
+import { env } from '../config/index.js';
 
 // mysql2가 mysql보다 더 빠르고 성능 좋고, Promise 지원까지 해줌.
 export const pool = mysql.createPool({

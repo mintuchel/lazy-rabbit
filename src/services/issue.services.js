@@ -1,4 +1,4 @@
-import { findIssuesCreatedAfter, findOpenedIssues } from "../models/issue.models.js";
+import { findIssuesCreatedAfter, findOpenedIssues } from "../db/repository/issue.repository.js";
 
 export async function getIssuesCreatedAfter(date) {
     return await findIssuesCreatedAfter(date);
