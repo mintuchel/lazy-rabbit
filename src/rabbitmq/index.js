@@ -10,11 +10,12 @@ export async function getConnection() {
     return connection;
 }
 
+// 이건 rpc 쓸때 사용하면 안됨
 export async function createChannel() {
     try {
         const connection = getConnection();
         const channel = await connection.createChannel();
-        await channel.assertExchange(env.EXCHANGE_NAME, "direct", { durable: true });
+        await channel.assertExchange(env.EXCHANGE_NAME, "direct", { durable: false });
         return channel;
     } catch (err) {
         throw err;

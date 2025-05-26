@@ -3,22 +3,23 @@ import { env } from "../config/index.js";
 
 const queue = env.RPC_QUEUE_NAME;
 
+// 콜백함수가 인자로 들어옴
 async function recieveEmailRpcMessage(handleMessage) {
     const connection = await getConnection();
     const channel = await connection.createChannel();
 
     // 존재한다면 기존 큐 사용, 아니면 새로운 큐 생성
-    // durable로 인해 서버가 다운되어도 떠있음
+    // durable:false로 서버가 재시작되면 큐가 사라지게 해놓음
     await channel.assertQueue(queue, { durable: false });
 
-    console.log(env.RPC_QUEUE_NAME);
-    console.log(queue);
     console.log(" [x] Awaiting RPC requests on %s", queue);
 
+    // 큐에서 메시지 받으면 호출될 콜백함수 실행
     channel.consume(queue, async function (msg) {
         if (!msg) return;
 
         const messagePayload = JSON.parse(msg.content.toString())
+        console.log(messagePayload);
 
         try {
             const responsePayload = await handleMessage(messagePayload);

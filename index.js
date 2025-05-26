@@ -2,6 +2,7 @@ import express from 'express';
 import issueRouter from './src/routes/issue.routes.js';
 import notificationRouter from './src/routes/notification.routes.js';
 import { env } from './src/config/index.js';
+import { NotificationServer } from './src/notification-server/server.js';
 
 const PORT = env.PORT;
 
@@ -19,4 +20,14 @@ app.use('/notification', notificationRouter);
 // server
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
+});
+
+const notificationServer = new NotificationServer();
+
+notificationServer.run(async (message) => {
+    console.log('rpc server recieved:', message);
+    return {
+      success: true,
+      message: "this is response msg by server!"
+    };
 });
