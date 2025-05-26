@@ -4,13 +4,15 @@ import { env } from "../config/index.js";
 const queue = env.RPC_QUEUE_NAME;
 
 async function recieveEmailRpcMessage(handleMessage) {
-    const conn = await getConnection();
-    const channel = await conn.createChannel();
+    const connection = await getConnection();
+    const channel = await connection.createChannel();
 
     // 존재한다면 기존 큐 사용, 아니면 새로운 큐 생성
     // durable로 인해 서버가 다운되어도 떠있음
-    await channel.assertQueue(queue, { durable: true });
+    await channel.assertQueue(queue, { durable: false });
 
+    console.log(env.RPC_QUEUE_NAME);
+    console.log(queue);
     console.log(" [x] Awaiting RPC requests on %s", queue);
 
     channel.consume(queue, async function (msg) {

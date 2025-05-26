@@ -3,6 +3,6 @@ import { handleNotification } from '../controllers/notification.controller.js';
 
 const router = express.Router();
 
-router.get('/notification', handleNotification);
+router.post('/notification', handleNotification);
 
 export default router;

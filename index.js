@@ -9,6 +9,7 @@ const app = express();
 
 // middle-ware
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 // router
 // 해당 라우터에 prefix 적용
