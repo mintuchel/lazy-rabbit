@@ -1,4 +1,4 @@
-import { getConnection } from "../../config/db.js";
+import { getConnection } from "../connection.js";
 
 export async function findIssuesCreatedAfter(date) {
     const conn = await getConnection();

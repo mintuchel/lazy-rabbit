@@ -1,24 +1,21 @@
 import express from 'express';
-import projectRouter from './src/routes/project.js';
-import issueRouter from './src/routes/issue.js';
-import userRouter from './src/routes/user.js';
-import dotenv from 'dotenv';
-
-dotenv.config();
-const PORT = process.env.PORT;
+import { env } from './config/env.js';
+import issueRouter from './routes/issueRouter.js';
+import userRouter from './routes/userRouter.js';
 
 const app = express();
 
-// middle-ware
-app.use(express.urlencoded({ extended: false }));
+// Middleware
+app.use(express.json()); // JSON 요청 본문 파싱
+app.use(express.urlencoded({ extended: false })); // URL-encoded 데이터 파싱
 
-// router
-// 해당 라우터에 prefix 적용
-app.use('/projects', projectRouter);
+// Router
 app.use('/issues', issueRouter);
 app.use('/users', userRouter);
 
-// server
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+// Server
+app.listen(env.PORT, () => {
+  console.log(`Server running at http://localhost:${env.PORT}`);
 });
+
+export default app;
