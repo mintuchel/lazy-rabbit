@@ -24,8 +24,10 @@ app.listen(PORT, () => {
 
 const notificationServer = new NotificationServer();
 
-notificationServer.run(async (message) => {
-    console.log('rpc server recieved:', message);
+// run 하면 실행될 콜백함수
+// 비즈니스로직이 여기 들어감
+notificationServer.run(async function (messagePayload) {
+    console.log('Received message:', messagePayload);
     return {
       success: true,
       message: "this is response msg by server!"

@@ -50,9 +50,7 @@ async function sendNotificationRpcMessage(id, msg) {
 }
 
 export async function sendNotification(id, msg) {
-  // const channel = await createChannel();
-  // const result = await publishMessage(channel, routingKey, msg);
   const result = await sendNotificationRpcMessage(id, msg);
-  console.log("result : %s", result);
+  console.log("client recieved : %s", result);
   return result;
 }
