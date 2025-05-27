@@ -11,5 +11,6 @@ export const env = {
   DB_NAME: process.env.DB_NAME,
   MSG_QUEUE_URL: process.env.MSG_QUEUE_URL,
   EXCHANGE_NAME: process.env.EXCHANGE_NAME,
-  RPC_QUEUE_NAME: process.env.RPC_QUEUE_NAME
+  NOTIFICATION_QUEUE_NAME: process.env.NOTIFICATION_QUEUE_NAME,
+  SCHEDULER_QUEUE_NAME: process.env.SCHEDULER_QUEUE_NAME,
 }

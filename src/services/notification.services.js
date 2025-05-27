@@ -2,7 +2,7 @@ import { getConnection } from "../rabbitmq/index.js";
 import { env } from "../config/index.js";
 import { v4 as uuidv4 } from 'uuid';
 
-const queue = env.RPC_QUEUE_NAME;
+const queueName = env.NOTIFICATION_QUEUE_NAME;
 
 async function sendNotificationRpcMessage(id, msg) {
     const connection = await getConnection();
@@ -36,7 +36,7 @@ async function sendNotificationRpcMessage(id, msg) {
         const message = { id, msg };
 
         // Notification Server에게 메시지 전송
-        channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)), {
+        channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), {
             correlationId,
             replyTo: replyQueue,
         });
