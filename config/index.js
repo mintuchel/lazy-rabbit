@@ -12,7 +12,4 @@ export const env = {
   DB_PASSWORD: process.env.DB_PASSWORD,
   DB_NAME: process.env.DB_NAME,
   MSG_QUEUE_URL: process.env.MSG_QUEUE_URL,
-  EXCHANGE_NAME: process.env.EXCHANGE_NAME,
-  RPC_QUEUE_NAME: process.env.RPC_QUEUE_NAME,
-  DIRECT_QUEUE_NAME: process.env.DIRECT_QUEUE_NAME,
 }

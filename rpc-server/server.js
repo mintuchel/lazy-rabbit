@@ -1,10 +1,8 @@
 import { getConnection } from "../rabbitmq/index.js";
-import { env } from "../config/index.js";
 
 export class RpcServer {
-    constructor() {
-        // AppServer와 RpcServer 가 공통적으로 사용하는 큐
-        this.queue = env.RPC_QUEUE_NAME;
+    constructor(queueDefinition) {
+        this.queue = queueDefinition;
         this.connection = null;
         this.channel = null;
     }
@@ -12,8 +10,8 @@ export class RpcServer {
     async init() {
         this.connection = await getConnection();
         this.channel = await this.connection.createChannel();
-        await this.channel.assertQueue(this.queue, { durable: false });
-        console.log("[RpcServer] Waiting for RPC requests on queue : %s", this.queue);
+        await this.channel.assertQueue(this.queue.name, { durable: this.queue.durable });
+        console.log("[RpcServer] Waiting for RPC requests on queue : %s", this.queue.name);
     }
 
     // 메시지 받으면 실행할 비즈니스 로직
@@ -30,7 +28,7 @@ export class RpcServer {
           await this.init();
       }
 
-      this.channel.consume(this.queue, async (msg) => {
+      this.channel.consume(this.queue.name, async (msg) => {
           if (!msg) return;
 
           const messagePayload = JSON.parse(msg.content.toString());

@@ -3,7 +3,7 @@ import dbRouter from './routes/db.routes.js';
 import rpcRouter from './routes/rpc.routes.js';
 import directRouter from './routes/direct.routes.js';
 
-import { env } from './src/config/index.js';
+import { env } from '../config/index.js';
 
 export class AppServer {
     constructor() {
@@ -17,8 +17,8 @@ export class AppServer {
     }
 
     initRoutes() {
-        this.app.use('/issues', dbRouter);
-        this.app.use('/notification', rpcRouter);
+        this.app.use('/db', dbRouter);
+        this.app.use('/rpc', rpcRouter);
         this.app.use('/direct', directRouter);
     }
 

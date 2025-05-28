@@ -1,8 +1,8 @@
 import { getConnection, subscribeMessage } from "../rabbitmq/index.js";
-import { getConnection } from "../rabbitmq/index.js";
 
 export class DirectServer {
-    constructor() {
+    constructor(exchangeDefinition) {
+        this.exchange = exchangeDefinition;
         this.connection = null;
         this.channel = null;
     }
@@ -17,7 +17,7 @@ export class DirectServer {
         if (!this.channel) {
             await this.init();
         }
-        
-        subscribeMessage(this.channel, "A");
+
+        subscribeMessage(this.channel, this.exchange, 'A');
     }
 }
