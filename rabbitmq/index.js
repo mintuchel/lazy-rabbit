@@ -63,10 +63,10 @@ export async function sendMessage(channel, queue, requestBody) {
 }
 
 // 특정 Exchange로 특정 RoutingKey를 가진 메시지 발행
-export async function publishMessage(channel, exchange, routingKey, msg) {
+export async function publishMessage(channel, exchange, routingKey, requestBody) {
     await channel.assertExchange(exchange.name, exchange.type, { durable: exchange.durable });
-    channel.publish(exchange.name, routingKey, Buffer.from(msg));
-    console.log("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchange.name, routingKey, msg);
+    channel.publish(exchange.name, routingKey, Buffer.from(JSON.stringify(requestBody)));
+    console.log("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchange.name, routingKey, JSON.stringify(requestBody));
 }
 
 // 특정 Exchange로 특정 bindingKey와 매칭되는 메시지 수신
