@@ -4,6 +4,6 @@ import { ExchangeDefinitions } from "../../rabbitmq/exchange/index.js";
 const channel = await createChannel();
 const exchange = ExchangeDefinitions.DIRECT_EXCHANGE;
 
-export async function sendDirectMessage(message) {
-    return await publishMessage(channel, exchange, 'A', message);
+export async function sendDirectMessage(payload) {
+    return await publishMessage(channel, exchange, payload.routingType, payload.message);
 }
