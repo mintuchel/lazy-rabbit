@@ -16,10 +16,10 @@ export class RpcServer {
 
     // 메시지 받으면 실행할 비즈니스 로직
     async handleMessage(messagePayload) {
-        console.log('Received message:', messagePayload);
+        console.log('[RECIEVED] msg content:', messagePayload);
         return {
             success: true,
-            message: "response message by rpc-server!"
+            message: "this is response message by rpc-server!"
         };
     }
     

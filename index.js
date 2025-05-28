@@ -11,8 +11,11 @@ async function main() {
   const rpcServer = new RpcServer(QueueDefinitions.RPC_QUEUE);
   rpcServer.run();
 
-  const directServer = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE);
-  directServer.run();
+  const directServerA = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, 'A');
+  directServerA.run();
+
+  const directServerB = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, 'B');
+  directServerB.run();
 }
 
 main();
