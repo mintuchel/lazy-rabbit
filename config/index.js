@@ -2,6 +2,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// 환경변수 로딩
+// 타 클래스에서는 env 변수를 통해 환경변수 접근
 export const env = {
   PORT: process.env.PORT,
   DB_HOST: process.env.DB_HOST,
@@ -11,6 +13,6 @@ export const env = {
   DB_NAME: process.env.DB_NAME,
   MSG_QUEUE_URL: process.env.MSG_QUEUE_URL,
   EXCHANGE_NAME: process.env.EXCHANGE_NAME,
-  NOTIFICATION_QUEUE_NAME: process.env.NOTIFICATION_QUEUE_NAME,
-  SCHEDULER_QUEUE_NAME: process.env.SCHEDULER_QUEUE_NAME,
+  RPC_QUEUE_NAME: process.env.RPC_QUEUE_NAME,
+  DIRECT_QUEUE_NAME: process.env.DIRECT_QUEUE_NAME,
 }

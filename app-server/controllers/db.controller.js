@@ -1,4 +1,4 @@
-import { getIssuesCreatedAfter, getOpenedIssues } from '../services/issue.services.js';
+import { getIssuesCreatedAfter, getOpenedIssues } from '../services/db.services.js';
 
 export async function handleGetIssuesCreatedAfter(req, res) {
     const created = req.query.created;

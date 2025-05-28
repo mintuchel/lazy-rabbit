@@ -1,5 +1,5 @@
 import express from 'express';
-import { handleGetIssuesCreatedAfter, handleGetOpenedIssues } from '../controllers/issue.controller.js';
+import { handleGetIssuesCreatedAfter, handleGetOpenedIssues } from '../controllers/db.controller.js';
 
 const router = express.Router();
 

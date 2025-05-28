@@ -1,6 +1,8 @@
 import express from 'express';
-import issueRouter from './src/routes/issue.routes.js';
-import notificationRouter from './src/routes/notification.routes.js';
+import dbRouter from './routes/db.routes.js';
+import rpcRouter from './routes/rpc.routes.js';
+import directRouter from './routes/direct.routes.js';
+
 import { env } from './src/config/index.js';
 
 export class AppServer {
@@ -15,8 +17,9 @@ export class AppServer {
     }
 
     initRoutes() {
-        this.app.use('/issues', issueRouter);
-        this.app.use('/notification', notificationRouter);
+        this.app.use('/issues', dbRouter);
+        this.app.use('/notification', rpcRouter);
+        this.app.use('/direct', directRouter);
     }
 
     async run() {

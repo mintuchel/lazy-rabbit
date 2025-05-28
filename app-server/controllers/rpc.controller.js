@@ -1,4 +1,4 @@
-import { sendNotification } from "../services/notification.services.js";
+import { sendNotification } from "../services/rpc.services.js";
 
 export async function handleNotification(req, res) {
     // JSON에서 id, msg 값 파싱

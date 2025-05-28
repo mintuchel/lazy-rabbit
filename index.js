@@ -1,16 +1,16 @@
-import { AppServer } from "./app-server.js";
-import { NotificationServer } from './src/notification-server/server.js';
-import { SchedulerServer} from "./src/scheduler-server/server.js";
+import { AppServer } from "./app-server/server.js";
+import { RpcServer } from "./rpc-server/server.js";
+import { DirectServer } from "./direct-server/server.js";
 
 async function main() {
   const appServer = new AppServer();
   await appServer.run();
 
-  const notificationServer = new NotificationServer();
-  notificationServer.run();
+  const rpcServer = new RpcServer();
+  rpcServer.run();
 
-  const schedulerServer = new SchedulerServer();
-  schedulerServer.run();
+  const directServer = new DirectServer();
+  directServer.run();
 }
 
 main();

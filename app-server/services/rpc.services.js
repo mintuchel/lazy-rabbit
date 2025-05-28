@@ -1,4 +1,4 @@
-import { getConnection } from "../rabbitmq/index.js";
+import { getConnection } from "../../rabbitmq/index.js";
 import { env } from "../config/index.js";
 import { v4 as uuidv4 } from 'uuid';
 

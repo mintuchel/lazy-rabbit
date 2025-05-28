@@ -1,5 +1,5 @@
 import express from 'express';
-import { handleNotification } from '../controllers/notification.controller.js';
+import { handleNotification } from '../controllers/rpc.controller.js';
 
 const router = express.Router();
 

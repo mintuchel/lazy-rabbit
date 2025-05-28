@@ -1,9 +1,10 @@
 import { getConnection } from "../rabbitmq/index.js";
 import { env } from "../config/index.js";
 
-export class NotificationServer {
+export class RpcServer {
     constructor() {
-        this.queueName = env.NOTIFICATION_QUEUE_NAME;
+        // AppServer와 RpcServer 가 공통적으로 사용하는 큐
+        this.queue = env.RPC_QUEUE_NAME;
         this.connection = null;
         this.channel = null;
     }
@@ -11,25 +12,25 @@ export class NotificationServer {
     async init() {
         this.connection = await getConnection();
         this.channel = await this.connection.createChannel();
-        await this.channel.assertQueue(this.queueName, { durable: false });
-        console.log("[NotificationServer] Waiting for RPC requests on %s", this.queueName);
+        await this.channel.assertQueue(this.queue, { durable: false });
+        console.log("[RpcServer] Waiting for RPC requests on queue : %s", this.queue);
     }
 
-    // 클래스 내부에 비즈니스 로직 정의
+    // 메시지 받으면 실행할 비즈니스 로직
     async handleMessage(messagePayload) {
         console.log('Received message:', messagePayload);
         return {
             success: true,
-            message: "response message by notification-server!"
+            message: "response message by rpc-server!"
         };
     }
-    // 외부에서 콜백을 받지 않고, 내부 메서드를 사용
+    
     async run() {
       if (!this.channel) {
           await this.init();
       }
 
-      this.channel.consume(this.queueName, async (msg) => {
+      this.channel.consume(this.queue, async (msg) => {
           if (!msg) return;
 
           const messagePayload = JSON.parse(msg.content.toString());
@@ -37,10 +38,11 @@ export class NotificationServer {
           try {
               const responsePayload = await this.handleMessage(messagePayload);
 
-              this.channel.sendToQueue(
-                  msg.properties.replyTo,
-                  Buffer.from(JSON.stringify(responsePayload)),
-                  { correlationId: msg.properties.correlationId }
+              // 다시 AppServer에게 보내기 위해 replyTo 큐를 활용해서 응답 결과 전송
+              this.channel.sendToQueue(msg.properties.replyTo, Buffer.from(JSON.stringify(responsePayload)),
+                  {
+                      correlationId: msg.properties.correlationId
+                  }
               );
           } catch (err) {
               console.error("Error handling RPC request:", err);
