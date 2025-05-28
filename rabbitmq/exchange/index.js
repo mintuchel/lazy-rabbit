@@ -11,4 +11,9 @@ export const ExchangeDefinitions = {
         type: ExchangeType.DIRECT,
         durable: false,
     },
+    TOPIC_EXCHANGE: {
+        name: 'avocado.topic.exchange',
+        type: ExchangeType.TOPIC,
+        durable: false,
+    },
 };
