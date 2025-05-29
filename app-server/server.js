@@ -2,6 +2,7 @@ import express from 'express';
 import dbRouter from './routes/db.routes.js';
 import rpcRouter from './routes/rpc.routes.js';
 import directRouter from './routes/direct.routes.js';
+import topicRouter from './routes/topic.routes.js';
 
 import { env } from '../config/index.js';
 
@@ -20,6 +21,7 @@ export class AppServer {
         this.app.use('/db', dbRouter);
         this.app.use('/rpc', rpcRouter);
         this.app.use('/direct', directRouter);
+        this.app.use('/topic', topicRouter);
     }
 
     async run() {

@@ -1,8 +1,8 @@
 import express from 'express';
-import { handleNotification } from '../controllers/rpc.controller.js';
+import { handleRpcMessage } from '../controllers/rpc.controller.js';
 
 const router = express.Router();
 
-router.post('/', handleNotification);
+router.post('/', handleRpcMessage);
 
 export default router;
