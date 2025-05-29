@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 let connection;
 
-export async function getConnection() {
+async function getConnection() {
     if (connection) return connection;
 
     connection = await amqp.connect(env.MSG_QUEUE_URL);
