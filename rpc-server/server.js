@@ -1,15 +1,13 @@
-import { getConnection } from "../rabbitmq/index.js";
+import { createChannel } from "../rabbitmq/index.js";
 
 export class RpcServer {
     constructor(queueDefinition) {
-        this.queue = queueDefinition;
-        this.connection = null;
         this.channel = null;
+        this.queue = queueDefinition;
     }
 
     async init() {
-        this.connection = await getConnection();
-        this.channel = await this.connection.createChannel();
+        this.channel = await createChannel();
         await this.channel.assertQueue(this.queue.name, { durable: this.queue.durable });
         console.log("[RpcServer] Waiting for RPC requests on queue : %s", this.queue.name);
     }
