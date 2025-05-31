@@ -5,8 +5,8 @@ export const AccountService = {
         return await AccountRepository.findAll();
     },
 
-    async getAccountById({ uid }) {
-        return await AccountRepository.findById({ uid });  
+    async getAccountById(uid) {
+        return await AccountRepository.findById(uid);  
     },
 
     async createAccount({uid, email, name, password}) {
@@ -17,7 +17,7 @@ export const AccountService = {
         return await AccountRepository.updateById({uid, email, name, password});
     },
 
-    async deleteAccount({uid}) {
-        return await AccountRepository.deleteById({uid});
+    async deleteAccount(uid) {
+        return await AccountRepository.deleteById(uid);
     }
 }
