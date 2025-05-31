@@ -1,5 +1,5 @@
 import express from 'express';
-import dbRouter from './routes/db.routes.js';
+import accountRouter from './routes/account.routes.js';
 import rpcRouter from './routes/rpc.routes.js';
 import directRouter from './routes/direct.routes.js';
 import topicRouter from './routes/topic.routes.js';
@@ -18,7 +18,7 @@ export class AppServer {
     }
 
     initRoutes() {
-        this.app.use('/db', dbRouter);
+        this.app.use('/account', accountRouter);
         this.app.use('/rpc', rpcRouter);
         this.app.use('/direct', directRouter);
         this.app.use('/topic', topicRouter);
