@@ -47,7 +47,8 @@ export const AccountRepository = {
     async updateById({ uid, email, name, password }) {
         const conn = await getConnection();
         try {
-            await conn.execute(AccountQuery.UPDATE_BY_ID, [uid]);
+            // preparedStatement 사용할때는 인자 주입 순서가 중요함
+            await conn.execute(AccountQuery.UPDATE_BY_ID, [email, name, password, uid]);
         } catch (err) {
             console.error('updateById query error:', err);
             throw err;

@@ -7,7 +7,8 @@ export const AccountController = {
     },
 
     async handleGetAccountById(req, res) {
-        const uid  = req.params;
+        // 간단한 경우는 구조분해할당 안하고 바로 파싱
+        const uid = req.params.uid;
         const account = await AccountService.getAccountById(uid);
         res.status(200).json(account);
     },
@@ -27,7 +28,7 @@ export const AccountController = {
     },
 
     async handleDeleteAccount(req, res) {
-        const uid = req.params;
+        const uid = req.params.uid;
         await AccountService.deleteAccount(uid);
         res.status(204).json({ message: 'Account deleted' });
     }
