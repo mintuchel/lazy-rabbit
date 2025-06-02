@@ -70,7 +70,7 @@ export async function publishMessage(channel, exchange, routingKey, requestBody)
 }
 
 // 특정 Exchange로 특정 bindingKey와 매칭되는 메시지 수신
-export async function subscribeMessage(channel, exchange, bindingKey) {
+export async function subscribeMessage(channel, exchange, bindingKey, onSubscribe) {
     await channel.assertExchange(exchange.name, exchange.type, { durable: exchange.durable });
 
     // Exchange와 연결할 익명 큐 생성
@@ -81,7 +81,7 @@ export async function subscribeMessage(channel, exchange, bindingKey) {
 
     channel.consume(anonymous_q.queue, function (msg) {
         if (msg.content) {
-            console.log("[RECIEVED] msg content:", msg.content.toString());
+            onSubscribe(msg);
         }
         channel.ack(msg);
     },

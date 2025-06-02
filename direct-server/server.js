@@ -1,10 +1,11 @@
 import { createChannel, subscribeMessage } from "../rabbitmq/index.js";
 
 export class DirectServer {
-    constructor(exchangeDefinition, bindingKey) {
+    constructor(exchangeDefinition, bindingKey, onSubscribe) {
         this.channel = null;
         this.exchange = exchangeDefinition;
         this.bindingKey = bindingKey;
+        this.onSubscribe = onSubscribe;
     }
 
     async init() {
@@ -17,6 +18,6 @@ export class DirectServer {
             await this.init();
         }
 
-        subscribeMessage(this.channel, this.exchange, this.bindingKey);
+        subscribeMessage(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
     }
 }
