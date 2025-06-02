@@ -1,4 +1,5 @@
 import { AccountRepository } from "../../db/repository/account.repository.js";
+import { RedisService } from "../../redis/index.js";
 
 export const AccountService = {
     async getAccounts() {
@@ -19,5 +20,9 @@ export const AccountService = {
 
     async deleteAccount(uid) {
         return await AccountRepository.deleteById(uid);
+    },
+
+    async login(uid, password) {
+        await RedisService.save(uid, password);
     }
 }

@@ -13,5 +13,7 @@ router.post('/', AccountController.handleCreateAccount);
 router.patch('/', AccountController.handleUpdateAccount);
 // DELETE /account
 router.delete('/', AccountController.handleDeleteAccount);
+// POST /account/login
+router.post('/login', AccountController.handleLogin);
 
 export default router;

@@ -31,5 +31,12 @@ export const AccountController = {
         const uid = req.params.uid;
         await AccountService.deleteAccount(uid);
         res.status(204).json({ message: 'Account deleted' });
+    },
+
+    async handleLogin(req, res) {
+        const uid = req.body.uid;
+        const password = req.body.password;
+        await AccountService.login(uid, password);
+        res.status(200).json({ message: 'Login success' });
     }
 }
