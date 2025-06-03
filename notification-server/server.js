@@ -1,4 +1,4 @@
-import { createChannel, subscribeMessage } from "../rabbitmq/index.js";
+import { messageBroker } from "../rabbitmq/index.js";
 
 export class NotificationServer {
     constructor(exchangeDefinition, bindingKey, onSubscribe) {
@@ -9,7 +9,7 @@ export class NotificationServer {
     }
 
     async init() {
-        this.channel = await createChannel();
+        this.channel = await messageBroker.createChannel();
         console.log("[NotificationServer] Waiting for routingKey %s messages", this.bindingKey);
     }
 
@@ -17,6 +17,6 @@ export class NotificationServer {
         if (!this.channel) {
             await this.init();
         }
-        subscribeMessage(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
+        messageBroker.subscribeMessage(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
     }
 }

@@ -1,4 +1,4 @@
-import { createChannel } from "../rabbitmq/index.js";
+import { messageBroker } from "../rabbitmq/index.js";
 
 export class RpcServer {
     constructor(queueDefinition) {
@@ -7,7 +7,7 @@ export class RpcServer {
     }
 
     async init() {
-        this.channel = await createChannel();
+        this.channel = await messageBroker.createChannel();
         await this.channel.assertQueue(this.queue.name, { durable: this.queue.durable });
         console.log("[RpcServer] Waiting for RPC requests on queue : %s", this.queue.name);
     }

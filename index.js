@@ -23,14 +23,19 @@ async function main() {
   directServerB.run();
 
   const groupNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.*', (msg) => {
-    console.log("[ GroupNotificationServer ] RECIEVED:", msg.content.toString());
+    console.log("[ Group-NotificationServer ] RECIEVED:", msg.content.toString());
   });
   groupNotificationServer.run();
 
   const myNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.mjh', (msg) => {
-    console.log("[ MeNotificationServer ] RECIEVED:", msg.content.toString());
+    console.log("[ My-NotificationServer ] RECIEVED:", msg.content.toString());
   });
   myNotificationServer.run();
+
+  const moonNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.moon', (msg) => {
+    console.log("[ Moon-NotificationServer ] RECIEVED:", msg.content.toString());
+  });
+  moonNotificationServer.run();
 }
 
 main();

@@ -1,4 +1,4 @@
-import { createChannel, subscribeMessage } from "../rabbitmq/index.js";
+import { messageBroker } from "../rabbitmq/index.js";
 
 export class DirectServer {
     constructor(exchangeDefinition, bindingKey, onSubscribe) {
@@ -9,7 +9,7 @@ export class DirectServer {
     }
 
     async init() {
-        this.channel = await createChannel();
+        this.channel = await messageBroker.createChannel();
         console.log("[DirectServer] Waiting for routingKey %s messages", this.bindingKey);
     }
 
@@ -18,6 +18,6 @@ export class DirectServer {
             await this.init();
         }
 
-        subscribeMessage(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
+        messageBroker.subscribeMessage(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
     }
 }
