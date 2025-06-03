@@ -2,7 +2,7 @@ import express from 'express';
 import accountRouter from './routes/account.routes.js';
 import rpcRouter from './routes/rpc.routes.js';
 import directRouter from './routes/direct.routes.js';
-import topicRouter from './routes/topic.routes.js';
+import notificationRouter from './routes/notification.routes.js';
 
 import { env } from '../config/index.js';
 
@@ -21,7 +21,7 @@ export class AppServer {
         this.app.use('/account', accountRouter);
         this.app.use('/rpc', rpcRouter);
         this.app.use('/direct', directRouter);
-        this.app.use('/topic', topicRouter);
+        this.app.use('/notification', notificationRouter);
     }
 
     async run() {

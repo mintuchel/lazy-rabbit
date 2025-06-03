@@ -1,7 +1,7 @@
 import { AppServer } from "./app-server/server.js";
 import { RpcServer } from "./rpc-server/server.js";
 import { DirectServer } from "./direct-server/server.js";
-import { TopicServer } from "./topic-server/server.js";
+import { NotificationServer } from "./notification-server/server.js";
 import { QueueDefinitions } from "./rabbitmq/queue/index.js";
 import { ExchangeDefinitions } from "./rabbitmq/exchange/index.js";
 
@@ -22,15 +22,15 @@ async function main() {
   });
   directServerB.run();
 
-  const topicServer1 = new TopicServer(ExchangeDefinitions.TOPIC_EXCHANGE, '*.*.rabbit', (msg) => {
-    console.log("[ TopicServer *.*.rabbit] RECIEVED:", msg.content.toString());
+  const groupNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.*', (msg) => {
+    console.log("[ GroupNotificationServer ] RECIEVED:", msg.content.toString());
   });
-  topicServer1.run();
+  groupNotificationServer.run();
 
-  const topicServer2 = new TopicServer(ExchangeDefinitions.TOPIC_EXCHANGE, '*.orange.*', (msg) => {
-    console.log("[ TopicServer *.orange.* ] RECIEVED:", msg.content.toString());
+  const myNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.mjh', (msg) => {
+    console.log("[ MeNotificationServer ] RECIEVED:", msg.content.toString());
   });
-  topicServer2.run();
+  myNotificationServer.run();
 }
 
 main();

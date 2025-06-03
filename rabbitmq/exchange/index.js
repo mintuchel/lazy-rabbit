@@ -11,8 +11,8 @@ export const ExchangeDefinitions = {
         type: ExchangeType.DIRECT,
         durable: false,
     },
-    TOPIC_EXCHANGE: {
-        name: 'avocado.topic.exchange',
+    NOTIFICATION_EXCHANGE: {
+        name: 'avocado.notification.exchange',
         type: ExchangeType.TOPIC,
         durable: false,
     },
