@@ -17,6 +17,17 @@ export class NotificationServer {
         if (!this.channel) {
             await this.init();
         }
-        messageBroker.subscribeMessage(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
+        messageBroker.subscribeToExchange(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
+    }
+
+    async shutdown() {
+        if (this.channel) {
+            try {
+                await this.channel.close();
+                console.log(`[NotificationServer] Channel for ${this.bindingKey} closed`);
+            } catch (err) {
+                console.error(`[NotificationServer] Error closing channel for ${this.bindingKey}:`, err);
+            }
+        }
     }
 }

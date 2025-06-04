@@ -28,8 +28,25 @@ export class AppServer {
         this.initMiddleware();
         this.initRoutes();
 
-        this.app.listen(this.port, () => {
+        this.server = this.app.listen(this.port, () => {
             console.log("[AppServer] express-app running on port %s", this.port);
-        })
+        });
+    }
+
+    async shutdown() {
+        if (this.server) {
+            return new Promise((resolve, reject) => {
+                // 서버 인스턴스 반환
+                this.server.close((err) => {
+                    if (err) {
+                        console.error("[AppServer] Error during shutdown:", err);
+                        reject(err);
+                    } else {
+                        console.log("[AppServer] Server closed successfully");
+                        resolve();
+                    }
+                });
+            });
+        }
     }
 }

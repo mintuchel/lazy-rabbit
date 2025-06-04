@@ -46,5 +46,16 @@ export class RpcServer {
 
           this.channel.ack(msg);
       });
-  }
+    }
+    
+    async shutdown() {
+        if (this.channel) {
+            try {
+                await this.channel.close();
+                console.log("[RpcServer] Channel closed");
+            } catch (err) {
+                console.error("[RpcServer] Error closing channel:", err);
+            }
+        }
+    }
 }

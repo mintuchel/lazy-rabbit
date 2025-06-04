@@ -5,7 +5,7 @@ const queue = QueueDefinitions.RPC_QUEUE;
 
 export async function sendRpcMessage(payload) {
     const channel = await messageBroker.createChannel();
-    const result = await messageBroker.sendMessage(channel, queue, payload);
+    const result = await messageBroker.sendRpcMessage(channel, queue, payload);
     console.log("client recieved : %s", result);
     return result;
 }

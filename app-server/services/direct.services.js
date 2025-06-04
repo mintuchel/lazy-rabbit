@@ -5,5 +5,5 @@ const channel = await messageBroker.createChannel();
 const exchange = ExchangeDefinitions.DIRECT_EXCHANGE;
 
 export async function sendDirectMessage(payload) {
-    return await messageBroker.publishMessage(channel, exchange, payload.routingType, payload.message);
+    return await messageBroker.publishToExchange(channel, exchange, payload.routingType, payload.message);
 }

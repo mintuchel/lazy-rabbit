@@ -6,5 +6,5 @@ const exchange = ExchangeDefinitions.NOTIFICATION_EXCHANGE;
 
 export async function sendNotificationMessage(payload) {
     console.log(payload);
-    return await messageBroker.publishMessage(channel, exchange, payload.routingType, payload.message);
+    return await messageBroker.publishToExchange(channel, exchange, payload.routingType, payload.message);
 }

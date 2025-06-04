@@ -18,6 +18,18 @@ export class DirectServer {
             await this.init();
         }
 
-        messageBroker.subscribeMessage(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
+        messageBroker.subscribeToExchange(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
+    }
+
+    async shutdown() {
+        if (this.channel) {
+            try {
+                // 메시지 수신 중단 + 리소스 정리
+                await this.channel.close();
+                console.log(`[DirectServer] Channel for routingKey ${this.bindingKey} closed`);
+            } catch (err) {
+                console.error(`[DirectServer] Failed to close channel for ${this.bindingKey}:`, err);
+            }
+        }
     }
 }
