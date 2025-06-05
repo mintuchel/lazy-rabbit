@@ -22,30 +22,11 @@ export class RpcServer {
     }
     
     async run() {
-      if (!this.channel) {
-          await this.init();
-      }
-
-      this.channel.consume(this.queue.name, async (msg) => {
-          if (!msg) return;
-
-          const messagePayload = JSON.parse(msg.content.toString());
-
-          try {
-              const responsePayload = await this.handleMessage(messagePayload);
-
-              // 다시 AppServer에게 보내기 위해 replyTo 큐를 활용해서 응답 결과 전송
-              this.channel.sendToQueue(msg.properties.replyTo, Buffer.from(JSON.stringify(responsePayload)),
-                  {
-                      correlationId: msg.properties.correlationId
-                  }
-              );
-          } catch (err) {
-              console.error("Error handling RPC request:", err);
-          }
-
-          this.channel.ack(msg);
-      });
+        if (!this.channel) {
+            await this.init();
+        }
+        
+        messageBroker.recieveRpcMessage(this.channel, this.queue, this.handleMessage);
     }
     
     async shutdown() {

@@ -67,6 +67,27 @@ class MessageBroker extends EventEmitter{
         });
     }
 
+    async recieveRpcMessage(channel, queue, onRecieve) {
+        channel.consume(queue.name, async (msg) => {
+            if (!msg) return;
+    
+            const messagePayload = JSON.parse(msg.content.toString());
+    
+            try {
+                const responsePayload = await onRecieve(messagePayload);
+    
+                // replyTo 큐로 응답 전송
+                channel.sendToQueue(msg.properties.replyTo, Buffer.from(JSON.stringify(responsePayload)), {
+                    correlationId: msg.properties.correlationId
+                });
+            } catch (err) {
+                console.error("Error handling RPC request: ", err);
+            }
+    
+            channel.ack(msg);
+        });
+    }
+
     // 특정 Exchange로 특정 RoutingKey를 가진 메시지 발행
     async publishToExchange(channel, exchange, routingKey, requestBody) {
         await channel.assertExchange(exchange.name, exchange.type, { durable: exchange.durable });
