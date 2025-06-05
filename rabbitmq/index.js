@@ -115,6 +115,17 @@ class MessageBroker extends EventEmitter{
             noAck: false,
         });
     };
+
+    async shutdown() {
+        if (this.connection) {
+            try {
+                await this.connection.close();
+                console.log("[MessageBroker] Connection closed");
+            } catch (err) {
+                console.error("[MessageBroker] Error closing connection:", err);
+            }
+        }
+    }
 }
 
 export const messageBroker = new MessageBroker();
