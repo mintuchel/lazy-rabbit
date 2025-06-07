@@ -12,4 +12,6 @@ export const env = {
   DB_PASSWORD: process.env.DB_PASSWORD,
   DB_NAME: process.env.DB_NAME,
   MSG_QUEUE_URL: process.env.MSG_QUEUE_URL,
+  REDIS_HOST: process.env.REDIS_HOST,
+  REDIS_PORT: process.env.REDIS_PORT
 }

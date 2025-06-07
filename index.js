@@ -10,10 +10,10 @@ class Application {
     this.appServer = new AppServer();
     this.rpcServer = new RpcServer(QueueDefinitions.RPC_QUEUE);
     this.directServerA = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, 'A', (msg) => {
-      console.log("[ DirectServer A] RECIEVED:", msg.content.toString());
+      console.log("[ DirectServer A ] RECIEVED:", msg.content.toString());
     });
     this.directServerB = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, 'B', (msg) => {
-      console.log("[ DirectServer B] RECIEVED:", msg.content.toString());
+      console.log("[ DirectServer B ] RECIEVED:", msg.content.toString());
     });
 
     this.groupNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.*', (msg) => {
