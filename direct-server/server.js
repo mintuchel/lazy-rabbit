@@ -1,4 +1,7 @@
 const { messageBroker } = require("../rabbitmq");
+const { env } = require('../config');
+const system = require("../system");
+
 
 class DirectServer {
     constructor(exchangeDefinition, bindingKey, onSubscribe) {
@@ -10,7 +13,7 @@ class DirectServer {
 
     async init() {
         this.channel = await messageBroker.createChannel();
-        console.log("[DirectServer] Waiting for routingKey %s messages", this.bindingKey);
+        system.debug("[DirectServer] Waiting for routingKey %s messages", this.bindingKey);
     }
 
     async run() {
@@ -19,6 +22,11 @@ class DirectServer {
         }
 
         messageBroker.subscribeToExchange(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
+    
+        system.debug("DirectServer start");
+        setInterval(() => {
+            system.debug("DirectServer is running");
+        }, env.HEARTBEAT_INTERVAL_MS);
     }
 
     async shutdown() {
@@ -26,9 +34,9 @@ class DirectServer {
             try {
                 // 메시지 수신 중단 + 리소스 정리
                 await this.channel.close();
-                console.log(`[DirectServer] Channel for routingKey ${this.bindingKey} closed`);
+                system.debug(`[DirectServer] Channel for routingKey ${this.bindingKey} closed`);
             } catch (err) {
-                console.error(`[DirectServer] Failed to close channel for ${this.bindingKey}:`, err);
+                system.error(`[DirectServer] Failed to close channel for ${this.bindingKey}:`, err);
             }
         }
     }

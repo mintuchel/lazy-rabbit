@@ -2,6 +2,7 @@ const amqp = require('amqplib');
 const { env } = require('../config');
 const { v4: uuidv4 } = require('uuid');
 const { EventEmitter } = require('events');
+const system = require("../system");
 
 // 싱글톤 객체로 export
 class MessageBroker extends EventEmitter {

@@ -1,5 +1,6 @@
 const mysql = require('mysql2/promise');
 const { env } = require('../config');
+const system = require("../system");
 
 // mysql2가 mysql보다 더 빠르고 성능 좋고, Promise 지원까지 해줌.
 const pool = mysql.createPool({
@@ -18,7 +19,7 @@ async function getConnection() {
         const connection = await pool.getConnection();
         return connection;
     } catch (err) {
-        console.error('Failed to get DB connection:', err);
+        system.error('Failed to get DB connection:', err);
         throw err;
     }
 }

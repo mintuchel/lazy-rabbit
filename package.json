@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "DEBUG=app:* NODE_ENV=development node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "simple network engine which can be scaled out easily",
   "dependencies": {
     "amqplib": "^0.10.8",
     "dotenv": "^16.5.0",

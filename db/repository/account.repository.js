@@ -1,5 +1,6 @@
 const { getConnection } = require("../connection");
 const { AccountQuery } = require("../query/account.query");
+const system = require("../../system");
 
 const AccountRepository = {
     async findAll() {
@@ -8,7 +9,7 @@ const AccountRepository = {
             const [rows] = await conn.query(AccountQuery.FIND_ALL);
             return rows;
         } catch (err) {
-            console.error('findAll query error:', err);
+            system.error('findAll query error:', err);
             throw err;
         } finally {
             // connection pool 로 다시 반환
@@ -24,7 +25,7 @@ const AccountRepository = {
             const [rows] = await conn.query(AccountQuery.FIND_BY_ID, [uid]);
             return rows;
         } catch (err) {
-            console.error('findById query error:', err);
+            system.error('findById query error:', err);
             throw err;
         } finally {
             // connection pool 로 다시 반환
@@ -37,7 +38,7 @@ const AccountRepository = {
         try {
             await conn.execute(AccountQuery.SAVE, [uid, email, name, password]);
         } catch (err) {
-            console.error('save query error:', err);
+            system.error('save query error:', err);
             throw err;
         } finally {
             conn.release();
@@ -50,7 +51,7 @@ const AccountRepository = {
             // preparedStatement 사용할때는 인자 주입 순서가 중요함
             await conn.execute(AccountQuery.UPDATE_BY_ID, [email, name, password, uid]);
         } catch (err) {
-            console.error('updateById query error:', err);
+            system.error('updateById query error:', err);
             throw err;
         } finally {
             // connection pool 로 다시 반환
@@ -63,7 +64,7 @@ const AccountRepository = {
         try {
             await conn.execute(AccountQuery.DELETE_ACCOUNT, [uid]);
         } catch (err) {
-            console.error('deleteById query error:', err);
+            system.error('deleteById query error:', err);
             throw err;
         } finally {
             conn.release();

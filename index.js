@@ -4,6 +4,7 @@ const { DirectServer } = require("./direct-server/server");
 const { NotificationServer } = require("./notification-server/server");
 const { QueueDefinitions } = require("./rabbitmq/queue");
 const { ExchangeDefinitions } = require("./rabbitmq/exchange");
+const system = require("./system");
 
 class Application {
   constructor() {
@@ -30,7 +31,24 @@ class Application {
   }
 
   async start() {
-    console.log("Starting application...");
+    system.debug("Starting application...");
+    const self = this;
+    process.on("SIGHUP", () => {
+      self.shutdown();
+    });
+    
+    process.on("SIGHUP", () => {
+      self.shutdown();
+    });
+    
+    process.on("SIGINT", () => {
+      self.shutdown();
+    });
+    
+    process.on("SIGTERM", () => {
+      self.shutdown();
+    });
+
     try {
       this.appServer.run();
       this.rpcServer.run();
@@ -39,15 +57,16 @@ class Application {
       this.groupNotificationServer.run();
       this.myNotificationServer.run();
       this.moonNotificationServer.run();
+      system.debug("Application started successfully");
     } catch (error) {
-      console.log("Error starting application:", error);
+      system.error("Error starting application:", error);
       await this.shutdown();
       throw error;
     }
   }
 
   async shutdown() {
-    console.log("Shutting down gracefully...");
+    system.debug("Shutting down gracefully...");
     try {
       // 역순으로 서비스 종료하기
       if (this.moonNotificationServer) await this.moonNotificationServer.shutdown();
@@ -60,10 +79,10 @@ class Application {
 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      console.log("Shutdown complete");
+      system.debug("Shutdown complete");
       process.exit(0);
     } catch (error) {
-      console.error("Error during shutdown:", error);
+      system.error("Error during shutdown:", error);
       process.exit(1);
     }
   }
@@ -71,13 +90,6 @@ class Application {
 
 const app = new Application();
 app.start().catch(error => {
-  console.error("Fatal error:", error);
+  system.error("Fatal error:", error);
   process.exit(1);
 });
-
-// ctrl+c
-process.on("SIGINT", async function () {
-  await app.shutdown();
-});
-// kill <pid>
-process.on("SIGTERM", async () => await app.shutdown());

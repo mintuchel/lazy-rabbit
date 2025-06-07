@@ -1,4 +1,6 @@
 const { messageBroker } = require("../rabbitmq");
+const { env } = require('../config');
+const system = require("../system");
 
 class NotificationServer {
     constructor(exchangeDefinition, bindingKey, onSubscribe) {
@@ -17,7 +19,13 @@ class NotificationServer {
         if (!this.channel) {
             await this.init();
         }
+
         messageBroker.subscribeToExchange(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
+        
+        system.debug("NotificationServer start");
+        setInterval(() => {
+            system.debug("NotificationServer is running");
+        }, env.HEARTBEAT_INTERVAL_MS);
     }
 
     async shutdown() {

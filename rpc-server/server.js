@@ -1,4 +1,6 @@
 const { messageBroker } = require("../rabbitmq");
+const { env } = require('../config');
+const system = require("../system");
 
 class RpcServer {
     constructor(queueDefinition) {
@@ -27,6 +29,11 @@ class RpcServer {
         }
 
         messageBroker.recieveRpcMessage(this.channel, this.queue, this.handleMessage);
+    
+        system.debug("RPCServer start");
+        setInterval(() => {
+            system.debug("RPCServer is running");
+        }, env.HEARTBEAT_INTERVAL_MS);
     }
 
     async shutdown() {
