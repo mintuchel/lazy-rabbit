@@ -1,9 +1,9 @@
-import { AppServer } from "./app-server/server.js";
-import { RpcServer } from "./rpc-server/server.js";
-import { DirectServer } from "./direct-server/server.js";
-import { NotificationServer } from "./notification-server/server.js";
-import { QueueDefinitions } from "./rabbitmq/queue/index.js";
-import { ExchangeDefinitions } from "./rabbitmq/exchange/index.js";
+const { AppServer } = require("./app-server/server");
+const { RpcServer } = require("./rpc-server/server");
+const { DirectServer } = require("./direct-server/server");
+const { NotificationServer } = require("./notification-server/server");
+const { QueueDefinitions } = require("./rabbitmq/queue");
+const { ExchangeDefinitions } = require("./rabbitmq/exchange");
 
 class Application {
   constructor() {
@@ -23,7 +23,7 @@ class Application {
     this.myNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.mjh', (msg) => {
       console.log("[ My-NotificationServer ] RECIEVED:", msg.content.toString());
     });
-  
+
     this.moonNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.moon', (msg) => {
       console.log("[ Moon-NotificationServer ] RECIEVED:", msg.content.toString());
     });
@@ -59,7 +59,7 @@ class Application {
       if (this.appServer) await this.appServer.shutdown();
 
       await new Promise(resolve => setTimeout(resolve, 1000));
-  
+
       console.log("Shutdown complete");
       process.exit(0);
     } catch (error) {
@@ -71,13 +71,13 @@ class Application {
 
 const app = new Application();
 app.start().catch(error => {
-  system.error("Fatal error:", error);
+  console.error("Fatal error:", error);
   process.exit(1);
-})
+});
 
 // ctrl+c
-process.on("SIGINT", async function() {
-  await app.shutdown()
-});   
-// kill <pid></pid>
+process.on("SIGINT", async function () {
+  await app.shutdown();
+});
+// kill <pid>
 process.on("SIGTERM", async () => await app.shutdown());

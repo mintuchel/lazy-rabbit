@@ -1,11 +1,13 @@
-import { messageBroker } from "../../rabbitmq/index.js";
-import { QueueDefinitions } from "../../rabbitmq/queue/index.js";
+const { messageBroker } = require("../../rabbitmq");
+const { QueueDefinitions } = require("../../rabbitmq/queue");
 
 const queue = QueueDefinitions.RPC_QUEUE;
 
-export async function sendRpcMessage(payload) {
+async function sendRpcMessage(payload) {
     const channel = await messageBroker.createChannel();
     const result = await messageBroker.sendRpcMessage(channel, queue, payload);
     console.log("client recieved : %s", result);
     return result;
 }
+
+module.exports = { sendRpcMessage };

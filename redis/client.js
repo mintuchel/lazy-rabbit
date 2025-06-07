@@ -1,9 +1,9 @@
-import { createClient } from 'redis';
-import { env } from '../config/index.js';
+const { createClient } = require('redis');
+const { env } = require('../config');
 
 let client;
 
-export async function getClient() {
+async function getClient() {
     if (client) return client;
 
     client = createClient({
@@ -23,3 +23,5 @@ export async function getClient() {
     await client.connect();
     return client;
 }
+
+module.exports = { getClient };

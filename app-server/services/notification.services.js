@@ -1,10 +1,15 @@
-import { messageBroker } from "../../rabbitmq/index.js";
-import { ExchangeDefinitions } from "../../rabbitmq/exchange/index.js";
+const { messageBroker } = require("../../rabbitmq");
+const { ExchangeDefinitions } = require("../../rabbitmq/exchange");
 
-const channel = await messageBroker.createChannel();
+let channel;
 const exchange = ExchangeDefinitions.NOTIFICATION_EXCHANGE;
 
-export async function sendNotificationMessage(payload) {
+async function sendNotificationMessage(payload) {
+    if (!channel) {
+        channel = await messageBroker.createChannel();
+    }
     console.log(payload);
     return await messageBroker.publishToExchange(channel, exchange, payload.routingType, payload.message);
 }
+
+module.exports = { sendNotificationMessage };

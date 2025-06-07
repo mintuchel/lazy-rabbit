@@ -1,8 +1,8 @@
-import express from 'express';
-import { handleDirectMessage } from '../controllers/direct.controller.js';
+const express = require('express');
+const { handleDirectMessage } = require('../controllers/direct.controller');
 
 const router = express.Router();
 
 router.post('/', handleDirectMessage);
 
-export default router;
+module.exports = router;

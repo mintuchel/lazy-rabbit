@@ -1,6 +1,6 @@
-import { AccountService } from '../services/account.services.js';
+const { AccountService } = require('../services/account.services');
 
-export const AccountController = {
+const AccountController = {
     async handleGetAccounts(req, res) {
         const accounts = await AccountService.getAccounts();
         res.status(200).json(accounts);
@@ -39,4 +39,6 @@ export const AccountController = {
         await AccountService.login(uid, password);
         res.status(200).json({ message: 'Login success' });
     }
-}
+};
+
+module.exports = { AccountController };

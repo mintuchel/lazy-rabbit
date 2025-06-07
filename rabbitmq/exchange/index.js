@@ -1,6 +1,6 @@
-import { ExchangeType } from "./types.js"
+const { ExchangeType } = require("./types");
 
-export const ExchangeDefinitions = {
+const ExchangeDefinitions = {
     FANOUT_EXCHANGE: {
         name: 'avocado.fanout.exchange',
         type: ExchangeType.FANOUT,
@@ -17,3 +17,5 @@ export const ExchangeDefinitions = {
         durable: false,
     },
 };
+
+module.exports = { ExchangeDefinitions };

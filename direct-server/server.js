@@ -1,6 +1,6 @@
-import { messageBroker } from "../rabbitmq/index.js";
+const { messageBroker } = require("../rabbitmq");
 
-export class DirectServer {
+class DirectServer {
     constructor(exchangeDefinition, bindingKey, onSubscribe) {
         this.channel = null;
         this.exchange = exchangeDefinition;
@@ -33,3 +33,5 @@ export class DirectServer {
         }
     }
 }
+
+module.exports = { DirectServer };

@@ -1,5 +1,5 @@
-import express from 'express';
-import { AccountController } from '../controllers/account.controller.js';
+const express = require('express');
+const { AccountController } = require('../controllers/account.controller');
 
 const router = express.Router();
 
@@ -16,4 +16,4 @@ router.delete('/', AccountController.handleDeleteAccount);
 // POST /account/login
 router.post('/login', AccountController.handleLogin);
 
-export default router;
+module.exports = router;

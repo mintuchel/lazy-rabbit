@@ -1,6 +1,6 @@
-import { messageBroker } from "../rabbitmq/index.js";
+const { messageBroker } = require("../rabbitmq");
 
-export class RpcServer {
+class RpcServer {
     constructor(queueDefinition) {
         this.channel = null;
         this.queue = queueDefinition;
@@ -20,15 +20,15 @@ export class RpcServer {
             message: "this is response message by rpc-server!"
         };
     }
-    
+
     async run() {
         if (!this.channel) {
             await this.init();
         }
-        
+
         messageBroker.recieveRpcMessage(this.channel, this.queue, this.handleMessage);
     }
-    
+
     async shutdown() {
         if (this.channel) {
             try {
@@ -40,3 +40,5 @@ export class RpcServer {
         }
     }
 }
+
+module.exports = { RpcServer };

@@ -1,5 +1,5 @@
-import mysql from 'mysql2/promise';
-import { env } from '../config/index.js';
+const mysql = require('mysql2/promise');
+const { env } = require('../config');
 
 // mysql2가 mysql보다 더 빠르고 성능 좋고, Promise 지원까지 해줌.
 const pool = mysql.createPool({
@@ -13,7 +13,7 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-export async function getConnection() {
+async function getConnection() {
     try {
         const connection = await pool.getConnection();
         return connection;
@@ -22,3 +22,5 @@ export async function getConnection() {
         throw err;
     }
 }
+
+module.exports = { getConnection };

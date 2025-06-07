@@ -1,8 +1,8 @@
-import express from 'express';
-import { handleRpcMessage } from '../controllers/rpc.controller.js';
+const express = require('express');
+const { handleRpcMessage } = require('../controllers/rpc.controller');
 
 const router = express.Router();
 
 router.post('/', handleRpcMessage);
 
-export default router;
+module.exports = router;

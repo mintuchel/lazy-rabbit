@@ -1,6 +1,6 @@
-import { messageBroker } from "../rabbitmq/index.js";
+const { messageBroker } = require("../rabbitmq");
 
-export class NotificationServer {
+class NotificationServer {
     constructor(exchangeDefinition, bindingKey, onSubscribe) {
         this.channel = null;
         this.exchange = exchangeDefinition;
@@ -31,3 +31,5 @@ export class NotificationServer {
         }
     }
 }
+
+module.exports = { NotificationServer };

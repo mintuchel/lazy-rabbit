@@ -1,10 +1,10 @@
-import amqp from 'amqplib';
-import { env } from '../config/index.js';
-import { v4 as uuidv4 } from 'uuid';
-import { EventEmitter } from 'events';
+const amqp = require('amqplib');
+const { env } = require('../config');
+const { v4: uuidv4 } = require('uuid');
+const { EventEmitter } = require('events');
 
 // 싱글톤 객체로 export
-class MessageBroker extends EventEmitter{
+class MessageBroker extends EventEmitter {
 
     constructor() {
         super();
@@ -40,7 +40,7 @@ class MessageBroker extends EventEmitter{
         return new Promise(function (resolve, reject) {
             // replyQueue로 들어온 메시지 받기
             channel.consume(replyQueue, function (msg) {
-        
+
                 // 내가 보낸 메시지가 맞다면 resolve 처리
                 if (msg.properties.correlationId === correlationId) {
                     const response = JSON.parse(msg.content.toString());
@@ -70,12 +70,12 @@ class MessageBroker extends EventEmitter{
     async recieveRpcMessage(channel, queue, onRecieve) {
         channel.consume(queue.name, async (msg) => {
             if (!msg) return;
-    
+
             const messagePayload = JSON.parse(msg.content.toString());
-    
+
             try {
                 const responsePayload = await onRecieve(messagePayload);
-    
+
                 // replyTo 큐로 응답 전송
                 channel.sendToQueue(msg.properties.replyTo, Buffer.from(JSON.stringify(responsePayload)), {
                     correlationId: msg.properties.correlationId
@@ -83,7 +83,7 @@ class MessageBroker extends EventEmitter{
             } catch (err) {
                 console.error("Error handling RPC request: ", err);
             }
-    
+
             channel.ack(msg);
         });
     }
@@ -101,7 +101,7 @@ class MessageBroker extends EventEmitter{
 
         // Exchange와 연결할 익명 큐 생성
         const anonymous_q = await channel.assertQueue("", { exclusive: true });
-    
+
         // Exchange와 익명큐 연결
         channel.bindQueue(anonymous_q.queue, exchange.name, bindingKey);
 
@@ -111,9 +111,9 @@ class MessageBroker extends EventEmitter{
             }
             channel.ack(msg);
         },
-        {
-            noAck: false,
-        });
+            {
+                noAck: false,
+            });
     };
 
     async shutdown() {
@@ -128,4 +128,5 @@ class MessageBroker extends EventEmitter{
     }
 }
 
-export const messageBroker = new MessageBroker();
+const messageBroker = new MessageBroker();
+module.exports = { messageBroker };

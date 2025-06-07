@@ -1,8 +1,8 @@
-import express from 'express';
-import { handleNotificationMessage } from '../controllers/notification.controller.js';
+const express = require('express');
+const { handleNotificationMessage } = require('../controllers/notification.controller');
 
 const router = express.Router();
 
 router.post('/', handleNotificationMessage);
 
-export default router;
+module.exports = router;

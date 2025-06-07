@@ -1,21 +1,21 @@
-import { AccountRepository } from "../../db/repository/account.repository.js";
-import { RedisService } from "../../redis/index.js";
+const { AccountRepository } = require("../../db/repository/account.repository");
+const { RedisService } = require("../../redis");
 
-export const AccountService = {
+const AccountService = {
     async getAccounts() {
         return await AccountRepository.findAll();
     },
 
     async getAccountById(uid) {
-        return await AccountRepository.findById(uid);  
+        return await AccountRepository.findById(uid);
     },
 
-    async createAccount({uid, email, name, password}) {
+    async createAccount({ uid, email, name, password }) {
         return await AccountRepository.save({ uid, email, name, password });
     },
 
-    async updateAccount({uid, email, name, password}) {
-        return await AccountRepository.updateById({uid, email, name, password});
+    async updateAccount({ uid, email, name, password }) {
+        return await AccountRepository.updateById({ uid, email, name, password });
     },
 
     async deleteAccount(uid) {
@@ -25,4 +25,6 @@ export const AccountService = {
     async login(uid, password) {
         await RedisService.save(uid, password);
     }
-}
+};
+
+module.exports = { AccountService };

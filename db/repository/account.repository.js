@@ -1,8 +1,8 @@
-import { getConnection } from "../connection.js";
-import { AccountQuery } from "../query/account.query.js";
+const { getConnection } = require("../connection");
+const { AccountQuery } = require("../query/account.query");
 
-export const AccountRepository = {
-    async findAll(){
+const AccountRepository = {
+    async findAll() {
         const conn = await getConnection();
         try {
             const [rows] = await conn.query(AccountQuery.FIND_ALL);
@@ -13,10 +13,10 @@ export const AccountRepository = {
         } finally {
             // connection pool 로 다시 반환
             conn.release();
-        }  
+        }
     },
 
-    async findById(uid){
+    async findById(uid) {
         const conn = await getConnection();
         try {
             // java 의 preparedStatement 같은 결과
@@ -29,7 +29,7 @@ export const AccountRepository = {
         } finally {
             // connection pool 로 다시 반환
             conn.release();
-        }  
+        }
     },
 
     async save({ uid, email, name, password }) {
@@ -69,4 +69,6 @@ export const AccountRepository = {
             conn.release();
         }
     }
-}
+};
+
+module.exports = { AccountRepository };

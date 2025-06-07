@@ -1,12 +1,12 @@
-import express from 'express';
-import accountRouter from './routes/account.routes.js';
-import rpcRouter from './routes/rpc.routes.js';
-import directRouter from './routes/direct.routes.js';
-import notificationRouter from './routes/notification.routes.js';
+const express = require('express');
+const accountRouter = require('./routes/account.routes');
+const rpcRouter = require('./routes/rpc.routes');
+const directRouter = require('./routes/direct.routes');
+const notificationRouter = require('./routes/notification.routes');
 
-import { env } from '../config/index.js';
+const { env } = require('../config');
 
-export class AppServer {
+class AppServer {
     constructor() {
         this.app = express();
         this.port = env.PORT;
@@ -50,3 +50,5 @@ export class AppServer {
         }
     }
 }
+
+module.exports = { AppServer };
