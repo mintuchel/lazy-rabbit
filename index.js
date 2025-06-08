@@ -13,22 +13,22 @@ class Application {
     this.appServer = new AppServer();
     this.rpcServer = new RpcServer(QueueDefinitions.RPC_QUEUE);
     this.directServerA = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, 'A', (msg) => {
-      console.log("[ DirectServer A ] RECIEVED:", msg.content.toString());
+      console.log("[RECIEVED] DirectServer A:", msg.content.toString());
     });
     this.directServerB = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, 'B', (msg) => {
-      console.log("[ DirectServer B ] RECIEVED:", msg.content.toString());
+      console.log("[RECIEVED] DirectServer B:", msg.content.toString());
     });
 
     this.groupNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.*', (msg) => {
-      console.log("[ Group-NotificationServer ] RECIEVED:", msg.content.toString());
+      console.log("[RECIEVED] NotificationServer (GROUP):", msg.content.toString());
     });
 
     this.myNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.mjh', (msg) => {
-      console.log("[ My-NotificationServer ] RECIEVED:", msg.content.toString());
+      console.log("[RECIEVED] NotificationServer (MJH):", msg.content.toString());
     });
 
     this.moonNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.moon', (msg) => {
-      console.log("[ Moon-NotificationServer ] RECIEVED:", msg.content.toString());
+      console.log("[RECIEVED] NotificationServer (MOON):", msg.content.toString());
     });
   }
 

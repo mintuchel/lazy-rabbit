@@ -16,7 +16,7 @@ class RpcServer {
 
     // 메시지 받으면 실행할 비즈니스 로직
     async handleMessage(messagePayload) {
-        console.log('[RECIEVED] msg content:', messagePayload);
+        console.log('[RECIEVED] RPCServer: ', messagePayload);
         return {
             success: true,
             message: "this is response message by rpc-server!"

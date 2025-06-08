@@ -61,6 +61,8 @@ class MessageBroker extends EventEmitter {
                 consumerTag,
             });
 
+            console.log("[SENT] destination queue : %s, msg : %s", queue.name, JSON.stringify(requestBody));
+    
             // 특정 queue로 메시지 전송
             channel.sendToQueue(queue.name, Buffer.from(JSON.stringify(requestBody)), {
                 correlationId,
