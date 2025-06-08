@@ -93,37 +93,43 @@ class MessageBroker extends EventEmitter {
             } catch (err) {
                 console.error("Error handling RPC request: ", err);
             }
-
             channel.ack(msg);
         });
     }
 
     // 특정 Exchange로 특정 RoutingKey를 가진 메시지 발행
     async publishToExchange(channel, exchange, routingKey, requestBody) {
-        await channel.assertExchange(exchange.name, exchange.type, { durable: exchange.durable });
-        channel.publish(exchange.name, routingKey, Buffer.from(JSON.stringify(requestBody)));
-        console.log("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchange.name, routingKey, JSON.stringify(requestBody));
+        try {
+            await channel.assertExchange(exchange.name, exchange.type, { durable: exchange.durable });
+            channel.publish(exchange.name, routingKey, Buffer.from(JSON.stringify(requestBody)));
+            console.log("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchange.name, routingKey, JSON.stringify(requestBody));
+        } catch (error) {
+            system.error("[MESSAGE-BROKER] PUBLISH TO EXCHANGE: ", error);
+        }
     }
 
     // 특정 Exchange로 특정 bindingKey와 매칭되는 메시지 수신
     async subscribeToExchange(channel, exchange, bindingKey, onSubscribe) {
-        await channel.assertExchange(exchange.name, exchange.type, { durable: exchange.durable });
+        try {
+            await channel.assertExchange(exchange.name, exchange.type, { durable: exchange.durable });
 
-        // Exchange와 연결할 익명 큐 생성
-        const anonymous_q = await channel.assertQueue("", { exclusive: true });
+            // Exchange와 연결할 익명 큐 생성
+            const anonymous_q = await channel.assertQueue("", { exclusive: true });
 
-        // Exchange와 익명큐 연결
-        channel.bindQueue(anonymous_q.queue, exchange.name, bindingKey);
+            // Exchange와 익명큐 연결
+            channel.bindQueue(anonymous_q.queue, exchange.name, bindingKey);
 
-        channel.consume(anonymous_q.queue, function (msg) {
-            if (msg.content) {
-                onSubscribe(msg);
-            }
-            channel.ack(msg);
-        },
-            {
+            channel.consume(anonymous_q.queue, function (msg) {
+                if (msg.content) {
+                    onSubscribe(msg);
+                }
+                channel.ack(msg);
+            },{
                 noAck: false,
             });
+        } catch (error) {
+            system.error("[MESSAGE-BROKER] SUBSCRIBE TO EXCHANGE: ", error);
+        }
     };
 }
 
