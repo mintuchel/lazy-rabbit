@@ -4,6 +4,8 @@ const { DirectServer } = require("./direct-server/server");
 const { NotificationServer } = require("./notification-server/server");
 const { QueueDefinitions } = require("./rabbitmq/queue");
 const { ExchangeDefinitions } = require("./rabbitmq/exchange");
+const { messageBroker } = require("./rabbitmq");
+
 const system = require("./system");
 
 class Application {
@@ -32,11 +34,9 @@ class Application {
 
   async start() {
     system.debug("Starting application...");
+
     const self = this;
-    process.on("SIGHUP", () => {
-      self.shutdown();
-    });
-    
+
     process.on("SIGHUP", () => {
       self.shutdown();
     });
@@ -50,6 +50,7 @@ class Application {
     });
 
     try {
+      messageBroker.run();
       this.appServer.run();
       this.rpcServer.run();
       this.directServerA.run();

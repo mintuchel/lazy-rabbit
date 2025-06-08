@@ -4,7 +4,6 @@ const { v4: uuidv4 } = require('uuid');
 const { EventEmitter } = require('events');
 const system = require("../system");
 
-// 싱글톤 객체로 export
 class MessageBroker extends EventEmitter {
 
     constructor() {
@@ -17,6 +16,14 @@ class MessageBroker extends EventEmitter {
 
         this.connection = await amqp.connect(env.MSG_QUEUE_URL);
         return this.connection;
+    }
+
+    async run() {
+        this.getConnection();
+        system.debug("MessageBroker start");
+        setInterval(() => {
+            system.debug("MessageBroker is running");
+        }, env.HEARTBEAT_INTERVAL_MS);
     }
 
     async createChannel() {
@@ -116,17 +123,6 @@ class MessageBroker extends EventEmitter {
                 noAck: false,
             });
     };
-
-    async shutdown() {
-        if (this.connection) {
-            try {
-                await this.connection.close();
-                console.log("[MessageBroker] Connection closed");
-            } catch (err) {
-                console.error("[MessageBroker] Error closing connection:", err);
-            }
-        }
-    }
 }
 
 const messageBroker = new MessageBroker();
