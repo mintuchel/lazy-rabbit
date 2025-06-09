@@ -15,7 +15,20 @@ class MessageBroker extends EventEmitter {
         });
   
         this.on('error', (err) => {
+            this.connection = null;
             system.error('[MESSAGE-BROKER] Connection error occurred:', err.message);
+            this.retryConnection();
+        });
+
+        this.on('timeout', (err) => {
+            system.error('[MESSAGE-BROKER] Network Timeout: failed to connect with broker server in 10 sec');
+        });
+
+        // 캐싱된 connection 객체 정리
+        // connection 객체를 정리하지 않으면 새로운 connection 객체 생성해서 사용하기 전에 캐싱된거 사용해서 에러남
+        this.on('close', () => {
+            system.error('[MESSAGE-BROKER] Connection closed, retrying...');
+            this.connection = null;
         });
     }
 
@@ -28,6 +41,31 @@ class MessageBroker extends EventEmitter {
             return this.connection;
         } catch (err) {
             this.emit('error', err);
+        }
+    }
+
+    async retryConnection() {
+        console.log('retryConnection started');
+        const TIMEOUT_MS = 5000;
+        // 10초후 자동으로 reject 결과를 반환하는 Promise 생성
+        const timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error());
+            }, TIMEOUT_MS)
+        });
+
+        try {
+            // 두 개 동시에 대기
+            const connection = await Promise.race([
+                this.getConnection(),
+                timeoutPromise,
+            ]);
+
+            console.log('connection re-assigned');
+            return connection; // 이거 굳이 없어도 되지? 지금 return 값 사용안하는거면
+        } catch (err) {
+            console.log('connection re-assign failed');
+            this.emit('timeout', err);
         }
     }
 
@@ -156,6 +194,11 @@ class MessageBroker extends EventEmitter {
             this.emit('error', err);
         }
     };
+
+    shutdown() {
+        this.connection = null;
+        console.log('[MESSAGE-BROKER] Connection closing...');
+    }
 }
 
 const messageBroker = new MessageBroker();

@@ -72,6 +72,7 @@ class Application {
     system.debug("Shutting down gracefully...");
     try {
       // 역순으로 서비스 종료하기
+      if(messageBroker) await messageBroker
       if (this.moonNotificationServer) await this.moonNotificationServer.shutdown();
       if (this.myNotificationServer) await this.myNotificationServer.shutdown();
       if (this.groupNotificationServer) await this.groupNotificationServer.shutdown();
