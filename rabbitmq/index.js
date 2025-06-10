@@ -197,7 +197,7 @@ class MessageBroker extends EventEmitter {
 
     shutdown() {
         this.connection = null;
-        system.debug('[MESSAGE-BROKER] Connection closing...');
+        system.info('[MESSAGE-BROKER] Connection closing...');
     }
 }
 

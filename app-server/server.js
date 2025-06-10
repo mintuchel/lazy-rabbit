@@ -39,6 +39,7 @@ class AppServer {
         }, env.HEARTBEAT_INTERVAL_MS);
     }
 
+    // 리소스 정리 후 항상 null로 초기화 해주기 (클린업 패턴)
     async shutdown() {
         if (!this.server) return;
 
@@ -49,6 +50,7 @@ class AppServer {
                     resolve();
                 });
             });
+            this.app = null;
             this.server = null;
             system.info("[AppServer] Server closed successfully");
         } catch (err) {

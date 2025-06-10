@@ -34,6 +34,7 @@ class DirectServer {
             try {
                 // 메시지 수신 중단 + 리소스 정리
                 await this.channel.close();
+                this.channel = null;
                 system.debug(`[DirectServer] Channel for routingKey ${this.bindingKey} closed`);
             } catch (err) {
                 system.error(`[DirectServer] Failed to close channel for ${this.bindingKey}:`, err);
