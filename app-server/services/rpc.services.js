@@ -1,11 +1,12 @@
 const { messageBroker } = require("../../rabbitmq");
-const { QueueDefinitions } = require("../../rabbitmq/queue");
+const { ExchangeDefinitions } = require("../../rabbitmq/exchange");
 
-const queue = QueueDefinitions.RPC_QUEUE;
+const exchangeDefinition = ExchangeDefinitions.RPC_EXCHANGE;
+const routingKey = 'avocado.rpc';
 
 async function sendRpcMessage(payload) {
     const channel = await messageBroker.createChannel();
-    const result = await messageBroker.sendRpcMessage(channel, queue, payload);
+    const result = await messageBroker.publishRpcMessage(channel, exchangeDefinition, routingKey, payload);
     console.log("[RECIEVED] RPCClient: %s", result);
     return result;
 }

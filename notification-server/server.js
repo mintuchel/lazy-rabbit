@@ -2,6 +2,7 @@ const { messageBroker } = require("../rabbitmq");
 const { env } = require('../config');
 const system = require("../system");
 
+// topic-exchange
 class NotificationServer {
     constructor(exchangeDefinition, bindingKey, onSubscribe) {
         this.channel = null;

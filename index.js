@@ -2,7 +2,6 @@ const { AppServer } = require("./app-server/server");
 const { RpcServer } = require("./rpc-server/server");
 const { DirectServer } = require("./direct-server/server");
 const { NotificationServer } = require("./notification-server/server");
-const { QueueDefinitions } = require("./rabbitmq/queue");
 const { ExchangeDefinitions } = require("./rabbitmq/exchange");
 const { messageBroker } = require("./rabbitmq");
 
@@ -11,7 +10,7 @@ const system = require("./system");
 class Application {
   constructor() {
     this.appServer = new AppServer();
-    this.rpcServer = new RpcServer(QueueDefinitions.RPC_QUEUE);
+    this.rpcServer = new RpcServer(ExchangeDefinitions.RPC_EXCHANGE);
     this.directServerA = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, 'A', (msg) => {
       system.info("[RECIEVED] DirectServer A:", msg.content.toString());
     });

@@ -3,19 +3,19 @@ const { env } = require('../config');
 const system = require("../system");
 
 class RpcServer {
-    constructor(queueDefinition) {
+    constructor(exchangeDefinition) {
         this.channel = null;
-        this.queue = queueDefinition;
+        this.exchangeDefinition = exchangeDefinition;
+        this.bindingKey = 'avocado.rpc';
     }
 
     async init() {
         this.channel = await messageBroker.createChannel();
-        await this.channel.assertQueue(this.queue.name, { durable: this.queue.durable });
-        system.info("[RpcServer] Waiting for RPC requests on queue : %s", this.queue.name);
+        system.info("[RpcServer] Waiting for RPC messages on exchange : %s", this.exchangeDefinition.name);
     }
 
     // 메시지 받으면 실행할 비즈니스 로직
-    async handleMessage(messagePayload) {
+    async onSubscribe(messagePayload) {
         system.info('[RECIEVED] RPCServer: ', messagePayload);
         return {
             success: true,
@@ -28,7 +28,7 @@ class RpcServer {
             await this.init();
         }
 
-        messageBroker.recieveRpcMessage(this.channel, this.queue, this.handleMessage);
+        messageBroker.subscribeRpcMessage(this.channel, this.exchangeDefinition, this.bindingKey, this.onSubscribe);
     
         system.debug("RPCServer start");
         setInterval(() => {
