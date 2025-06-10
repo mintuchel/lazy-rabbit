@@ -12,7 +12,7 @@ class NotificationServer {
 
     async init() {
         this.channel = await messageBroker.createChannel();
-        console.log("[NotificationServer] Waiting for routingKey %s messages", this.bindingKey);
+        system.info("[NotificationServer] Waiting for routingKey %s messages", this.bindingKey);
     }
 
     async run() {
@@ -21,7 +21,7 @@ class NotificationServer {
         }
 
         messageBroker.subscribeToExchange(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
-        
+
         system.debug("NotificationServer start");
         setInterval(() => {
             system.debug("NotificationServer is running");
@@ -32,9 +32,10 @@ class NotificationServer {
         if (this.channel) {
             try {
                 await this.channel.close();
-                console.log(`[NotificationServer] Channel for ${this.bindingKey} closed`);
+                this.channel = null;
+                system.debug(`[NotificationServer] Channel for ${this.bindingKey} closed`);
             } catch (err) {
-                console.error(`[NotificationServer] Error closing channel for ${this.bindingKey}:`, err);
+                system.error(`[NotificationServer] Error closing channel for ${this.bindingKey}:`, err);
             }
         }
     }

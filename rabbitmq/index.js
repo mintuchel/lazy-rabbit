@@ -11,7 +11,7 @@ class MessageBroker extends EventEmitter {
         this.connection = null;
         
         this.on('connected', () => {
-            system.log('[MESSAGE-BROKER] Connected to RabbitMQ');
+            system.info('[MESSAGE-BROKER] Connected to RabbitMQ');
         });
   
         this.on('error', (err) => {
@@ -45,7 +45,7 @@ class MessageBroker extends EventEmitter {
     }
 
     async retryConnection() {
-        console.log('retryConnection started');
+        system.info('retryConnection started');
         const TIMEOUT_MS = 5000;
         // 10초후 자동으로 reject 결과를 반환하는 Promise 생성
         const timeoutPromise = new Promise((resolve, reject) => {
@@ -64,14 +64,14 @@ class MessageBroker extends EventEmitter {
             console.log('connection re-assigned');
             return connection; // 이거 굳이 없어도 되지? 지금 return 값 사용안하는거면
         } catch (err) {
-            console.log('connection re-assign failed');
+            system.error('connection re-assign failed');
             this.emit('timeout', err);
         }
     }
 
     async run() {
         await this.getConnection();
-        system.debug("MessageBroker start");
+        system.info("MessageBroker start");
         setInterval(() => {
             system.debug("MessageBroker is running");
         }, env.HEARTBEAT_INTERVAL_MS);
@@ -113,7 +113,7 @@ class MessageBroker extends EventEmitter {
                     consumerTag,
                 });
 
-                console.log("[SENT] destination queue : %s, msg : %s", queue.name, JSON.stringify(requestBody));
+                system.info("[SENT] destination queue : %s, msg : %s", queue.name, JSON.stringify(requestBody));
     
                 // 특정 queue로 메시지 전송
                 channel.sendToQueue(queue.name, Buffer.from(JSON.stringify(requestBody)), {
@@ -163,7 +163,7 @@ class MessageBroker extends EventEmitter {
         try {
             await channel.assertExchange(exchange.name, exchange.type, { durable: exchange.durable });
             channel.publish(exchange.name, routingKey, Buffer.from(JSON.stringify(requestBody)));
-            console.log("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchange.name, routingKey, JSON.stringify(requestBody));
+            system.info("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchange.name, routingKey, JSON.stringify(requestBody));
         } catch (err) {
             system.error("[MESSAGE-BROKER] PUBLISH TO EXCHANGE: ", err.message);
             this.emit('error', err);
@@ -197,7 +197,7 @@ class MessageBroker extends EventEmitter {
 
     shutdown() {
         this.connection = null;
-        console.log('[MESSAGE-BROKER] Connection closing...');
+        system.debug('[MESSAGE-BROKER] Connection closing...');
     }
 }
 

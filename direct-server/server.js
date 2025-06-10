@@ -13,7 +13,7 @@ class DirectServer {
 
     async init() {
         this.channel = await messageBroker.createChannel();
-        system.debug("[DirectServer] Waiting for routingKey %s messages", this.bindingKey);
+        system.info("[DirectServer] Waiting for routingKey %s messages", this.bindingKey);
     }
 
     async run() {

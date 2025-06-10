@@ -30,7 +30,7 @@ class AppServer {
         this.initRoutes();
 
         this.server = this.app.listen(this.port, () => {
-            console.log("[AppServer] express-app running on port %s", this.port);
+            system.info("[AppServer] express-app running on port %s", this.port);
         });
 
         system.debug("API Server start");
@@ -40,19 +40,19 @@ class AppServer {
     }
 
     async shutdown() {
-        if (this.server) {
-            return new Promise((resolve, reject) => {
-                // 서버 인스턴스 반환
+        if (!this.server) return;
+
+        try {
+            await new Promise((resolve, reject) => {
                 this.server.close((err) => {
-                    if (err) {
-                        system.debug("[AppServer] Error during shutdown:", err);
-                        reject(err);
-                    } else {
-                        system.debug("[AppServer] Server closed successfully");
-                        resolve();
-                    }
+                    if (err) return reject(err);
+                    resolve();
                 });
             });
+            this.server = null;
+            system.info("[AppServer] Server closed successfully");
+        } catch (err) {
+            system.error("[AppServer] Error during shutdown: ", err);
         }
     }
 }

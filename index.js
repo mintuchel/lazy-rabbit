@@ -13,39 +13,45 @@ class Application {
     this.appServer = new AppServer();
     this.rpcServer = new RpcServer(QueueDefinitions.RPC_QUEUE);
     this.directServerA = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, 'A', (msg) => {
-      console.log("[RECIEVED] DirectServer A:", msg.content.toString());
+      system.info("[RECIEVED] DirectServer A:", msg.content.toString());
     });
     this.directServerB = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, 'B', (msg) => {
-      console.log("[RECIEVED] DirectServer B:", msg.content.toString());
+      system.info("[RECIEVED] DirectServer B:", msg.content.toString());
     });
 
     this.groupNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.*', (msg) => {
-      console.log("[RECIEVED] NotificationServer (GROUP):", msg.content.toString());
+      system.info("[RECIEVED] NotificationServer (GROUP):", msg.content.toString());
     });
 
     this.myNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.mjh', (msg) => {
-      console.log("[RECIEVED] NotificationServer (MJH):", msg.content.toString());
+      system.info("[RECIEVED] NotificationServer (MJH):", msg.content.toString());
     });
 
     this.moonNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.moon', (msg) => {
-      console.log("[RECIEVED] NotificationServer (MOON):", msg.content.toString());
+      system.info("[RECIEVED] NotificationServer (MOON):", msg.content.toString());
     });
   }
 
   async start() {
-    system.debug("Starting application...");
+    system.debug('Starting application...');
 
     const self = this;
 
+    // HANG-UP
     process.on("SIGHUP", () => {
+      system.error('sig-hangup called');
       self.shutdown();
     });
-    
+
+    // INTERRUPT
     process.on("SIGINT", () => {
+      system.error('sig-interrupt called');
       self.shutdown();
     });
-    
+
+    // TERMINATE
     process.on("SIGTERM", () => {
+      system.error('sig-term called');
       self.shutdown();
     });
 
@@ -72,7 +78,6 @@ class Application {
     system.debug("Shutting down gracefully...");
     try {
       // 역순으로 서비스 종료하기
-      if(messageBroker) await messageBroker
       if (this.moonNotificationServer) await this.moonNotificationServer.shutdown();
       if (this.myNotificationServer) await this.myNotificationServer.shutdown();
       if (this.groupNotificationServer) await this.groupNotificationServer.shutdown();
@@ -80,6 +85,7 @@ class Application {
       if (this.directServerA) await this.directServerA.shutdown();
       if (this.rpcServer) await this.rpcServer.shutdown();
       if (this.appServer) await this.appServer.shutdown();
+      if (messageBroker) messageBroker.shutdown();
 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -93,7 +99,4 @@ class Application {
 }
 
 const app = new Application();
-app.start().catch(error => {
-  system.error("Fatal error:", error);
-  process.exit(1);
-});
+app.start();

@@ -11,12 +11,12 @@ class RpcServer {
     async init() {
         this.channel = await messageBroker.createChannel();
         await this.channel.assertQueue(this.queue.name, { durable: this.queue.durable });
-        console.log("[RpcServer] Waiting for RPC requests on queue : %s", this.queue.name);
+        system.info("[RpcServer] Waiting for RPC requests on queue : %s", this.queue.name);
     }
 
     // 메시지 받으면 실행할 비즈니스 로직
     async handleMessage(messagePayload) {
-        console.log('[RECIEVED] RPCServer: ', messagePayload);
+        system.info('[RECIEVED] RPCServer: ', messagePayload);
         return {
             success: true,
             message: "this is response message by rpc-server!"
@@ -40,9 +40,10 @@ class RpcServer {
         if (this.channel) {
             try {
                 await this.channel.close();
-                console.log("[RpcServer] Channel closed");
+                this.channel = null;
+                system.debug("[RpcServer] Channel closed");
             } catch (err) {
-                console.error("[RpcServer] Error closing channel:", err);
+                system.error("[RpcServer] Error closing channel:", err);
             }
         }
     }
