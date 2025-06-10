@@ -16,6 +16,11 @@ const ExchangeDefinitions = {
         type: ExchangeType.TOPIC,
         durable: false,
     },
+    RPC_EXCHANGE: {
+        name: 'avocado.rpc.exchange',
+        type: ExchangeType.DIRECT,
+        durable: false,
+    }
 };
 
 module.exports = { ExchangeDefinitions };

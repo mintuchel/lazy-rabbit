@@ -24,8 +24,6 @@ class MessageBroker extends EventEmitter {
             system.error('[MESSAGE-BROKER] Network Timeout: failed to connect with broker server in 10 sec');
         });
 
-        // 캐싱된 connection 객체 정리
-        // connection 객체를 정리하지 않으면 새로운 connection 객체 생성해서 사용하기 전에 캐싱된거 사용해서 에러남
         this.on('close', () => {
             system.error('[MESSAGE-BROKER] Connection closed, retrying...');
             this.connection = null;
@@ -47,7 +45,6 @@ class MessageBroker extends EventEmitter {
     async retryConnection() {
         system.info('retryConnection started');
         const TIMEOUT_MS = 5000;
-        // 10초후 자동으로 reject 결과를 반환하는 Promise 생성
         const timeoutPromise = new Promise((resolve, reject) => {
             setTimeout(() => {
                 reject(new Error());
@@ -55,14 +52,13 @@ class MessageBroker extends EventEmitter {
         });
 
         try {
-            // 두 개 동시에 대기
             const connection = await Promise.race([
                 this.getConnection(),
                 timeoutPromise,
             ]);
 
             console.log('connection re-assigned');
-            return connection; // 이거 굳이 없어도 되지? 지금 return 값 사용안하는거면
+            return connection;
         } catch (err) {
             system.error('connection re-assign failed');
             this.emit('timeout', err);
@@ -87,25 +83,21 @@ class MessageBroker extends EventEmitter {
         }
     };
 
-    async sendRpcMessage(channel, queue, requestBody) {
+    async publishRpcMessage(channel, exchangeDefinition, routingKey, requestBody) {
         try {
-            // 매 request 마다 할당하기 위한 id 생성
             const correlationId = uuidv4();
-            // RpcServer 로부터 응답을 받기 위한 익명큐 하나 선언
+            // Consumer로부터 응답을 받기 위한 익명큐 하나 선언
             const { queue: replyQueue } = await channel.assertQueue("", { exclusive: true });
-            // 해당 consumer 고유 식별 번호
             const consumerTag = uuidv4();
 
-            // 성공/실패에 따라 resolve/reject를 호출할 수 있는 Promise 반환
-            return new Promise(function (resolve, reject) {
-                // replyQueue로 들어온 메시지 받기
-                channel.consume(replyQueue, function (msg) {
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, { durable: exchangeDefinition.durable || false });
 
-                    // 내가 보낸 메시지가 맞다면 resolve 처리
+            return new Promise((resolve, reject) => {
+                channel.consume(replyQueue, (msg) => {
+                    // 내가 보낸 메시지에 대한 응답이 맞다면
                     if (msg.properties.correlationId === correlationId) {
                         const response = JSON.parse(msg.content.toString());
                         resolve(response);
-                        // 메시지를 받았다면 cancel 처리?
                         channel.cancel(consumerTag);
                     }
                 }, {
@@ -113,73 +105,76 @@ class MessageBroker extends EventEmitter {
                     consumerTag,
                 });
 
-                system.info("[SENT] destination queue : %s, msg : %s", queue.name, JSON.stringify(requestBody));
-    
-                // 특정 queue로 메시지 전송
-                channel.sendToQueue(queue.name, Buffer.from(JSON.stringify(requestBody)), {
+                // 특정 exchange로 메시지 전송
+                this.publishToExchange(channel, exchangeDefinition, routingKey, requestBody, {
                     correlationId,
                     replyTo: replyQueue,
                 });
 
-                // 10초 동안 응답이 안오면 cancel 
-                setTimeout(function () {
+                setTimeout(() => {
                     channel.cancel(consumerTag);
                     reject(new Error('RPC timeout'));
                 }, 10000);
             });
         } catch (err) {
-            system.error("[MESSAGE-BROKER] RPC (SEND): ", err.message);
+            system.error("[MESSAGE-BROKER] RPC (PUBLISH): ", err.message);
             this.emit('error', err);
         }
     }
 
-    async recieveRpcMessage(channel, queue, onRecieve) {
+    async subscribeRpcMessage(channel, exchangeDefinition, bindingKey, onSubscribe) {
         try {
-            channel.consume(queue.name, async (msg) => {
+            // 내가 binding할 Exchange 존재하는지 확인
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, { durable: exchangeDefinition.durable || false });
+
+            // exchange와 바인딩할 익명 큐 선언
+            const anonymous_q = await channel.assertQueue("", { exclusive: true });
+            // binding 진행
+            await channel.bindQueue(anonymous_q.queue, exchangeDefinition.name, bindingKey);
+
+            channel.consume(anonymous_q.queue, async (msg) => {
                 if (!msg) return;
 
                 const request = JSON.parse(msg.content.toString());
-                const response = await onRecieve(request);
+                const response = await onSubscribe(request); // 요청에 대한 처리 진행
 
+                // RPC니까 응답 다시 전송해주기
                 try {
-                    // replyTo 큐로 응답 전송
-                    channel.sendToQueue(msg.properties.replyTo, Buffer.from(JSON.stringify(response)), {
-                        correlationId: msg.properties.correlationId
-                    });
+                    if (msg.properties.replyTo) {
+                        channel.sendToQueue(msg.properties.replyTo, Buffer.from(JSON.stringify(response)), {
+                            correlationId: msg.properties.correlationId
+                        });
+                    }
                 } catch (err) {
-                    system.error("[MESSAGE-BROKER] RPC (SEND-TO-QUEUE): ", err.message);
+                    system.error("[MESSAGE-BROKER] RPC (SEND-TO-REPLY-QUEUE): ", err.message);
                     this.emit('error', err);
                 }
                 channel.ack(msg);
-            });
+            }, { noAck: false });
         } catch (err) {
-            system.error("[MESSAGE-BROKER] RPC (RECIEVE): ", err.message);
+            system.error("[MESSAGE-BROKER] RPC (SUBSCRIBE): ", err.message);
             this.emit('error', err);
         }
     }
 
-    // 특정 Exchange로 특정 RoutingKey를 가진 메시지 발행
-    async publishToExchange(channel, exchange, routingKey, requestBody) {
+    async publishToExchange(channel, exchangeDefinition, routingKey, requestBody, properties = {}) {
         try {
-            await channel.assertExchange(exchange.name, exchange.type, { durable: exchange.durable });
-            channel.publish(exchange.name, routingKey, Buffer.from(JSON.stringify(requestBody)));
-            system.info("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchange.name, routingKey, JSON.stringify(requestBody));
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, { durable: exchangeDefinition.durable || false });
+            channel.publish(exchangeDefinition.name, routingKey, Buffer.from(JSON.stringify(requestBody)), properties);
+            system.info("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchangeDefinition.name, routingKey, JSON.stringify(requestBody));
         } catch (err) {
             system.error("[MESSAGE-BROKER] PUBLISH TO EXCHANGE: ", err.message);
             this.emit('error', err);
         }
     }
 
-    // 특정 Exchange로 특정 bindingKey와 매칭되는 메시지 수신
-    async subscribeToExchange(channel, exchange, bindingKey, onSubscribe) {
+    async subscribeToExchange(channel, exchangeDefinition, bindingKey, onSubscribe) {
         try {
-            await channel.assertExchange(exchange.name, exchange.type, { durable: exchange.durable });
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, { durable: exchangeDefinition.durable || false});
 
-            // Exchange와 연결할 익명 큐 생성
             const anonymous_q = await channel.assertQueue("", { exclusive: true });
 
-            // Exchange와 익명큐 연결
-            channel.bindQueue(anonymous_q.queue, exchange.name, bindingKey);
+            channel.bindQueue(anonymous_q.queue, exchangeDefinition.name, bindingKey);
 
             channel.consume(anonymous_q.queue, function (msg) {
                 if (msg.content) {
