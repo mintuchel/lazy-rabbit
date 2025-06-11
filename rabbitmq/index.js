@@ -15,9 +15,16 @@ class MessageBroker extends EventEmitter {
         });
   
         this.on('error', (err) => {
-            this.connection = null;
-            system.error('[MESSAGE-BROKER] Connection error occurred:', err.message);
-            this.retryConnection();
+            console.log(err.code);
+            if (err.code === 'ECONNREFUSED') {
+                this.connection = null;
+                this.retryConnection();
+                system.error('[MESSAGE-BROKER] Failed to connect to RabbitMQ. The server may be down or the port may be closed.');
+            } else if (err.code === 406 && err.message.includes('PRECONDITION_FAILED')) {
+                system.error('[MESSAGE-BROKER] Invalid arguments when declaring exchange or having conflict with existing exchange:', err.message);
+            } else {
+                system.error('[MESSAGE-BROKER] Connection error:', err.message);
+            }
         });
 
         this.on('timeout', (err) => {
