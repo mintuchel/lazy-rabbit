@@ -83,7 +83,7 @@ class MessageBroker extends EventEmitter {
         }
     };
 
-    async publishRpcMessage(channel, exchangeDefinition, routingKey, requestBody) {
+    async publishRpcMessage(channel, exchangeDefinition, routingKey, payload) {
         try {
             const correlationId = uuidv4();
             // Consumer로부터 응답을 받기 위한 익명큐 하나 선언
@@ -106,7 +106,8 @@ class MessageBroker extends EventEmitter {
                 });
 
                 // 특정 exchange로 메시지 전송
-                this.publishToExchange(channel, exchangeDefinition, routingKey, requestBody, {
+                // properties로 rpc 메시지 관련 정보 전송
+                this.publishToExchange(channel, exchangeDefinition, routingKey, payload, {
                     correlationId,
                     replyTo: replyQueue,
                 });
@@ -135,8 +136,8 @@ class MessageBroker extends EventEmitter {
             channel.consume(anonymous_q.queue, async (msg) => {
                 if (!msg) return;
 
-                const request = JSON.parse(msg.content.toString());
-                const response = await onSubscribe(request); // 요청에 대한 처리 진행
+                const payload = JSON.parse(msg.content.toString());
+                const response = await onSubscribe(payload); // payload에 대한 처리 진행
 
                 // RPC니까 응답 다시 전송해주기
                 try {
@@ -157,11 +158,12 @@ class MessageBroker extends EventEmitter {
         }
     }
 
-    async publishToExchange(channel, exchangeDefinition, routingKey, requestBody, properties = {}) {
+    // properties는 RPC일때만 들어옴. 아무 값이 안들어오면 매개변수 기본값으로 세팅됨!
+    async publishToExchange(channel, exchangeDefinition, routingKey, payload, properties = {}) {
         try {
             await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, { durable: exchangeDefinition.durable || false });
-            channel.publish(exchangeDefinition.name, routingKey, Buffer.from(JSON.stringify(requestBody)), properties);
-            system.info("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchangeDefinition.name, routingKey, JSON.stringify(requestBody));
+            channel.publish(exchangeDefinition.name, routingKey, Buffer.from(JSON.stringify(payload)), properties);
+            system.info("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchangeDefinition.name, routingKey, JSON.stringify(payload));
         } catch (err) {
             system.error("[MESSAGE-BROKER] PUBLISH TO EXCHANGE: ", err.message);
             this.emit('error', err);
