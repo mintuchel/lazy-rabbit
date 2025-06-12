@@ -58,6 +58,7 @@ class Application {
       // connection 하나만 생성되게 하기 위해 messageBroker.run 에 await 걸기 -> 이거 없으면 아래꺼 다같이 비동기적으로 진행해서 connection이 평균 3-4개 생성됨
       // 그 이후부터는 비동기적으로 진행
       await messageBroker.run();
+      
       this.appServer.run();
       this.rpcServer.run();
       this.directServerA.run();

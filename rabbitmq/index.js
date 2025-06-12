@@ -6,9 +6,15 @@ const system = require("../system");
 
 class MessageBroker extends EventEmitter {
 
+    /**
+    * @private
+    * Holds the amqp connection instance.
+    * A single amqp connection is reused throughout the class.
+    */
+    #connection = null;
+
     constructor() {
         super();
-        this.connection = null;
         
         this.on('connected', () => {
             system.info('[MESSAGE-BROKER] Connected to RabbitMQ');
@@ -16,15 +22,6 @@ class MessageBroker extends EventEmitter {
   
         this.on('error', (err) => {
             console.log(err);
-            if (err.code === 'ECONNREFUSED') {
-                this.connection = null;
-                this.retryConnection();
-                system.error('[MESSAGE-BROKER] Failed to connect to RabbitMQ. The server may be down or the port may be closed.');
-            } else if (err.code === 406 && err.message.includes('PRECONDITION_FAILED')) {
-                system.error('[MESSAGE-BROKER] Invalid arguments when declaring exchange or having conflict with existing exchange:', err.message);
-            } else {
-                system.error('[MESSAGE-BROKER] Connection error:', err.message);
-            }
         });
 
         this.on('timeout', (err) => {
@@ -37,52 +34,57 @@ class MessageBroker extends EventEmitter {
         });
     }
 
-    async getConnection() {
-        if (this.connection) return this.connection;
-
-        try {
-            this.connection = await amqp.connect(env.MSG_QUEUE_URL);
-            this.emit('connected');
-            return this.connection;
-        } catch (err) {
-            this.emit('error', err);
-        }
-    }
-
-    async retryConnection() {
-        system.info('retryConnection started');
-        const TIMEOUT_MS = 5000;
-        const timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                reject(new Error());
-            }, TIMEOUT_MS)
-        });
-
-        try {
-            const connection = await Promise.race([
-                this.getConnection(),
-                timeoutPromise,
-            ]);
-
-            console.log('connection re-assigned');
-            return connection;
-        } catch (err) {
-            system.error('connection re-assign failed');
-            this.emit('timeout', err);
-        }
-    }
-
+    // Initializes the message broker and starts the heartbeat log.
     async run() {
-        await this.getConnection();
-        system.info("MessageBroker start");
+        await this.#createConnection();
+
+        system.info("MessageBroker starting...");
+
+        // Interval to send heartbeats to broker.
+        // Defaults to 5 seconds.
         setInterval(() => {
             system.debug("MessageBroker is running");
         }, env.HEARTBEAT_INTERVAL_MS);
     }
 
+    /**
+     * @private
+     * Creates a shared amqp connection instance.
+     */
+    async #createConnection() {
+        if (this.#connection) return;
+
+        try {
+            this.#connection = await amqp.connect(env.MSG_QUEUE_URL);
+            this.emit('connected');
+        } catch (err) {
+            this.emit('error', err);
+        }
+    }
+
+    /**
+     * @private
+     * Retrieves the existing amqp connection or creates one if not available.
+     * Used in createChannel func
+     * @returns {Promise<amqp.Connection>}
+     */
+    async #getConnection() {
+        if (this.#connection) return this.#connection;
+        
+        try{
+            return await this.#createConnection();
+        } catch (err) {
+            this.emit('error', err);
+        }
+    }
+
+    /**
+     * Creates and returns a new amqp channel using the current connection.
+     * @returns {Promise<amqp.Channel>}
+     */
     async createChannel() {
         try {
-            const connection = await this.getConnection();
+            const connection = await this.#getConnection();
             const channel = await connection.createChannel();
             return channel;
         } catch (err) {
@@ -92,7 +94,7 @@ class MessageBroker extends EventEmitter {
 
     /**
     * 
-    * @param {amqplib.Channel} channel - AMQP channel used for publishing.
+    * @param {amqplib.Channel} channel - amqp channel used for publishing.
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
     * @param {string} routingKey - Routing key used for message delivery.
     * @param {Object} payload - Message body in JSON format.
@@ -144,7 +146,7 @@ class MessageBroker extends EventEmitter {
     * The onSubscribe callback must return a value which will be sent back as the RPC response.
     *
     * @async
-    * @param {amqplib.Channel} channel - The AMQP channel used to set up the subscription.
+    * @param {amqplib.Channel} channel - The amqp channel used to set up the subscription.
     * @param {Object} exchangeDefinition - ExchangeDefinition config object.
     * @param {string} bindingKey - The bindingKey used for binding anonymous_q to exchange.
     * @param {function} onSubscribe - Callback function executed when a message is received.
@@ -189,7 +191,7 @@ class MessageBroker extends EventEmitter {
     /**
     * Publishes a message to a specific exchange using the given exchangeDefinition config.
     * This function is called internally in publishRpcMessage
-    * @param {amqplib.Channel} channel - AMQP channel used for publishing.
+    * @param {amqplib.Channel} channel - amqp channel used for publishing.
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
     * @param {string} routingKey - Routing key used for message delivery.
     * @param {Object} payload - Message body in JSON format.
@@ -211,7 +213,7 @@ class MessageBroker extends EventEmitter {
     * Messages matching the routing key will trigger the provided callback.
     *
     * @async
-    * @param {amqplib.Channel} channel - The AMQP channel used for exchange and queue operations.
+    * @param {amqplib.Channel} channel - The amqp channel used for exchange and queue operations.
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
     * @param {string} bindingKey - Binding key used for binding anonymous_q to exchange.
     * @param {function} onSubscribe - Callback function executed when a message is received.
