@@ -15,7 +15,7 @@ class MessageBroker extends EventEmitter {
         });
   
         this.on('error', (err) => {
-            console.log(err.code);
+            console.log(err);
             if (err.code === 'ECONNREFUSED') {
                 this.connection = null;
                 this.retryConnection();
@@ -90,6 +90,13 @@ class MessageBroker extends EventEmitter {
         }
     };
 
+    /**
+    * 
+    * @param {amqplib.Channel} channel - AMQP channel used for publishing.
+    * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
+    * @param {string} routingKey - Routing key used for message delivery.
+    * @param {Object} payload - Message body in JSON format.
+    */
     async publishRpcMessage(channel, exchangeDefinition, routingKey, payload) {
         try {
             const correlationId = uuidv4();
@@ -136,10 +143,12 @@ class MessageBroker extends EventEmitter {
     * Subscribes to messages from a specific exchange using the RPC pattern, and sends a response.
     * The onSubscribe callback must return a value which will be sent back as the RPC response.
     *
+    * @async
     * @param {amqplib.Channel} channel - The AMQP channel used to set up the subscription.
-    * @param {Object} exchangeDefinition - Exchange definition including name and type.
-    * @param {string} bindingKey - The routing key used for binding to the exchange.
+    * @param {Object} exchangeDefinition - ExchangeDefinition config object.
+    * @param {string} bindingKey - The bindingKey used for binding anonymous_q to exchange.
     * @param {function} onSubscribe - Callback function executed when a message is received.
+    * 
     * It should return the response to be sent back to the RPC caller.
     */
     async subscribeRpcMessage(channel, exchangeDefinition, bindingKey, onSubscribe) {
@@ -177,11 +186,19 @@ class MessageBroker extends EventEmitter {
         }
     }
 
-    // properties는 RPC일때만 들어옴. 아무 값이 안들어오면 매개변수 기본값으로 세팅됨!
-    async publishToExchange(channel, exchangeDefinition, routingKey, payload, properties = {}) {
+    /**
+    * Publishes a message to a specific exchange using the given exchangeDefinition config.
+    * This function is called internally in publishRpcMessage
+    * @param {amqplib.Channel} channel - AMQP channel used for publishing.
+    * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
+    * @param {string} routingKey - Routing key used for message delivery.
+    * @param {Object} payload - Message body in JSON format.
+    * @param {Object} [properties={}] - Optional message properties (e.g. for RPC: replyTo, correlationId).
+    */
+    async publishToExchange(channel, exchangeDefinition, routingKey, payload, messageProperties = {}) {
         try {
             await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, { durable: exchangeDefinition.durable || false });
-            channel.publish(exchangeDefinition.name, routingKey, Buffer.from(JSON.stringify(payload)), properties);
+            channel.publish(exchangeDefinition.name, routingKey, Buffer.from(JSON.stringify(payload)), messageProperties);
             system.info("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchangeDefinition.name, routingKey, JSON.stringify(payload));
         } catch (err) {
             system.error("[MESSAGE-BROKER] PUBLISH TO EXCHANGE: ", err.message);
@@ -189,6 +206,18 @@ class MessageBroker extends EventEmitter {
         }
     }
 
+    /**
+    * Subscribes to a specific exchange and binds an exclusive, anonymous queue to the given routing key.
+    * Messages matching the routing key will trigger the provided callback.
+    *
+    * @async
+    * @param {amqplib.Channel} channel - The AMQP channel used for exchange and queue operations.
+    * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
+    * @param {string} bindingKey - Binding key used for binding anonymous_q to exchange.
+    * @param {function} onSubscribe - Callback function executed when a message is received.
+    * 
+    * It should return the response to be sent back to the RPC caller.
+    */
     async subscribeToExchange(channel, exchangeDefinition, bindingKey, onSubscribe) {
         try {
             await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, { durable: exchangeDefinition.durable || false});
