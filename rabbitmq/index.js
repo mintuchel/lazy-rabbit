@@ -97,7 +97,8 @@ class MessageBroker extends EventEmitter {
             const { queue: replyQueue } = await channel.assertQueue("", { exclusive: true });
             const consumerTag = uuidv4();
 
-            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, { durable: exchangeDefinition.durable || false });
+            // 여기 exchangeDefinition.name으로 써줘야함
+            await channel.assertExchange(exchangeDefinition, exchangeDefinition.type, { durable: exchangeDefinition.durable || false });
 
             return new Promise((resolve, reject) => {
                 channel.consume(replyQueue, (msg) => {
@@ -126,10 +127,21 @@ class MessageBroker extends EventEmitter {
             });
         } catch (err) {
             system.error("[MESSAGE-BROKER] RPC (PUBLISH): ", err.message);
+            console.dir(err, { depth: null });
             this.emit('error', err);
         }
     }
 
+    /**
+    * Subscribes to messages from a specific exchange using the RPC pattern, and sends a response.
+    * The onSubscribe callback must return a value which will be sent back as the RPC response.
+    *
+    * @param {amqplib.Channel} channel - The AMQP channel used to set up the subscription.
+    * @param {Object} exchangeDefinition - Exchange definition including name and type.
+    * @param {string} bindingKey - The routing key used for binding to the exchange.
+    * @param {function} onSubscribe - Callback function executed when a message is received.
+    * It should return the response to be sent back to the RPC caller.
+    */
     async subscribeRpcMessage(channel, exchangeDefinition, bindingKey, onSubscribe) {
         try {
             // 내가 binding할 Exchange 존재하는지 확인
