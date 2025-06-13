@@ -29,8 +29,8 @@ class MessageBroker extends EventEmitter {
         });
 
         this.on('close', () => {
-            system.error('[MESSAGE-BROKER] Connection closed, retrying...');
             this.connection = null;
+            system.error('[MESSAGE-BROKER] Connection closed');
         });
     }
 
@@ -91,6 +91,16 @@ class MessageBroker extends EventEmitter {
             this.emit('error', err);
         }
     };
+
+    async assertQueue(channel, queueDefinition) {
+        // 없다면 익명큐 선언
+        if (queueDefinition === "") {
+            return await channel.assertQueue("", { exclusive: true });
+        }
+
+        const { name, options } = queueDefinition;
+        return await channel.assertQueue(name, options);
+    }
 
     /**
     * 
@@ -157,7 +167,7 @@ class MessageBroker extends EventEmitter {
     * 
     * It should return the response to be sent back to the RPC caller.
     */
-    async subscribeRpcMessage(channel, exchangeDefinition, bindingKey, onSubscribe) {
+    async subscribeRpcMessage(channel, exchangeDefinition, queueDefinition, bindingKey, onSubscribe) {
 
         try {
             // 내가 binding할 Exchange 존재하는지 확인
@@ -169,11 +179,12 @@ class MessageBroker extends EventEmitter {
                 });
 
             // exchange와 바인딩할 익명 큐 선언
-            const anonymous_q = await channel.assertQueue("", { exclusive: true });
-            // binding 진행
-            await channel.bindQueue(anonymous_q.queue, exchangeDefinition.name, bindingKey);
+            const declaredQueue = await this.assertQueue(channel, queueDefinition);
 
-            channel.consume(anonymous_q.queue, async (msg) => {
+            // binding 진행
+            await channel.bindQueue(declaredQueue.queue, exchangeDefinition.name, bindingKey);
+
+            channel.consume(declaredQueue.queue, async (msg) => {
                 if (!msg) return;
 
                 const payload = JSON.parse(msg.content.toString());
@@ -235,7 +246,7 @@ class MessageBroker extends EventEmitter {
     * 
     * It should return the response to be sent back to the RPC caller.
     */
-    async subscribeToExchange(channel, exchangeDefinition, bindingKey, onSubscribe) {
+    async subscribeToExchange(channel, exchangeDefinition, queueDefinition, bindingKey, onSubscribe) {
         try {
             await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type,
                 {
@@ -244,11 +255,11 @@ class MessageBroker extends EventEmitter {
                     internal: exchangeDefinition.options.internal ?? false,
                 });
 
-            const anonymous_q = await channel.assertQueue("", { exclusive: true });
+            const declaredQueue = await this.assertQueue(channel, queueDefinition);
 
-            channel.bindQueue(anonymous_q.queue, exchangeDefinition.name, bindingKey);
+            await channel.bindQueue(declaredQueue.queue, exchangeDefinition.name, bindingKey);
 
-            channel.consume(anonymous_q.queue, function (msg) {
+            channel.consume(declaredQueue.queue, function (msg) {
                 if (msg.content) {
                     onSubscribe(msg);
                 }
@@ -262,9 +273,10 @@ class MessageBroker extends EventEmitter {
         }
     };
 
-    shutdown() {
-        this.connection = null;
+    async shutdown() {
         system.info('[MESSAGE-BROKER] Connection closing...');
+        await this.#connection.close();
+        this.emit('close');
     }
 }
 
