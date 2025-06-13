@@ -28,7 +28,7 @@ class RpcServer {
             await this.init();
         }
 
-        messageBroker.subscribeRpcMessage(this.channel, this.exchangeDefinition, this.bindingKey, this.onSubscribe);
+        messageBroker.subscribeRpcMessage(this.channel, this.exchangeDefinition, "", this.bindingKey, this.onSubscribe);
     
         system.debug("RPCServer start");
         setInterval(() => {

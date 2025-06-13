@@ -4,9 +4,10 @@ const system = require("../system");
 
 
 class DirectServer {
-    constructor(exchangeDefinition, bindingKey, onSubscribe) {
+    constructor(exchangeDefinition, queueDefinition, bindingKey, onSubscribe) {
         this.channel = null;
-        this.exchange = exchangeDefinition;
+        this.exchangeDefinition = exchangeDefinition;
+        this.queueDefinition = queueDefinition;
         this.bindingKey = bindingKey;
         this.onSubscribe = onSubscribe;
     }
@@ -21,7 +22,7 @@ class DirectServer {
             await this.init();
         }
 
-        messageBroker.subscribeToExchange(this.channel, this.exchange, this.bindingKey, this.onSubscribe);
+        messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.onSubscribe);
     
         system.debug("DirectServer start");
         setInterval(() => {
