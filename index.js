@@ -3,6 +3,7 @@ const { RpcServer } = require("./rpc-server/server");
 const { DirectServer } = require("./direct-server/server");
 const { NotificationWorker } = require("./notification-worker/worker");
 const { ExchangeDefinitions } = require("./rabbitmq/exchange");
+const { QueueDefinitions } = require("./rabbitmq/queue");
 const { messageBroker } = require("./rabbitmq");
 
 const system = require("./system");
@@ -11,22 +12,22 @@ class Application {
   constructor() {
     this.appServer = new AppServer();
     this.rpcServer = new RpcServer(ExchangeDefinitions.RPC_EXCHANGE);
-    this.directServerA = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, 'A', (msg) => {
+    this.directServerA = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, "", 'A', (msg) => {
       system.info("[RECIEVED] DirectServer A:", msg.content.toString());
     });
-    this.directServerB = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, 'B', (msg) => {
+    this.directServerB = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, "", 'B', (msg) => {
       system.info("[RECIEVED] DirectServer B:", msg.content.toString());
     });
 
-    this.smsWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'notify.sms.#', (msg) => {
+    this.smsWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, QueueDefinitions.NOTIFY_SMS_QUEUE, 'notify.sms.#', (msg) => {
       system.info("[RECIEVED] Worker (SMS):", msg.content.toString());
     });
 
-    this.emailWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'notify.email.#', (msg) => {
+    this.emailWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, QueueDefinitions.NOTIFY_EMAIL_QUEUE, 'notify.email.#', (msg) => {
       system.info("[RECIEVED] Worker (EMAIL):", msg.content.toString());
     });
 
-    this.slackWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'notify.slack.#', (msg) => {
+    this.slackWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, QueueDefinitions.NOTIFY_SLACK_QUEUE, 'notify.slack.#', (msg) => {
       system.info("[RECIEVED] Worker (SLACK):", msg.content.toString());
     });
   }
