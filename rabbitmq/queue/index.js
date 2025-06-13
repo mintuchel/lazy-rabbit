@@ -1,38 +1,23 @@
 const QueueDefinitions = {
-    FANOUT_EXCHANGE: {
-        name: 'avocado.fanout.exchange',
-        type: ExchangeType.FANOUT,
+    NOTIFY_SMS_QUEUE: {
+        name: 'notify.sms.queue',
         options: {
             durable: false,
-            autoDelete: true,
-            internal: false
+            messageTtl: 10000
         }
     },
-    DIRECT_EXCHANGE: {
-        name: 'avocado.direct.exchange',
-        type: ExchangeType.DIRECT,
+    NOTIFY_EMAIL_QUEUE: {
+        name: 'notify.email.queue',
         options: {
             durable: false,
-            autoDelete: true,
-            internal: false
+            messageTtl: 10000
         }
     },
-    NOTIFICATION_EXCHANGE: {
-        name: 'avocado.notification.exchange',
-        type: ExchangeType.TOPIC,
+    NOTIFY_SLACK_QUEUE: {
+        name: 'notify.slack.queue',
         options: {
             durable: false,
-            autoDelete: true,
-            internal: false
-        }
-    },
-    RPC_EXCHANGE: {
-        name: 'avocado.rpc.exchange',
-        type: ExchangeType.DIRECT,
-        options: {
-            durable: false,
-            autoDelete: true,
-            internal: false
+            messageTtl: 10000
         }
     }
 };
