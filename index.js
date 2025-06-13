@@ -100,4 +100,8 @@ class Application {
 }
 
 const app = new Application();
-app.start();
+app.start().catch(error => {
+
+  system.error("Fatal error:", error);
+  process.exit(1);
+});
