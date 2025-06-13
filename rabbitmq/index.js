@@ -8,8 +8,9 @@ class MessageBroker extends EventEmitter {
 
     /**
     * @private
-    * Holds the amqp connection instance.
-    * A single amqp connection is reused throughout the class.
+    * A single, shared amqp connection instance.
+    * Created once and reused for all operations within this class only.
+    * Not exposed outside the MessageBroker class.
     */
     #connection = null;
 
@@ -40,11 +41,10 @@ class MessageBroker extends EventEmitter {
 
         system.info("MessageBroker starting...");
 
-        // Interval to send heartbeats to broker.
-        // Defaults to 5 seconds.
+        // Interval to send heartbeats to broker(Defaults to 5 seconds).
         setInterval(() => {
             system.debug("MessageBroker is running");
-        }, env.HEARTBEAT_INTERVAL_MS);
+        }, env.HEARTBEAT_INTERVAL_MS ?? 5000);
     }
 
     /**
@@ -65,7 +65,7 @@ class MessageBroker extends EventEmitter {
     /**
      * @private
      * Retrieves the existing amqp connection or creates one if not available.
-     * Used in createChannel func
+     * Used in createChannel function
      * @returns {Promise<amqp.Connection>}
      */
     async #getConnection() {
@@ -80,6 +80,7 @@ class MessageBroker extends EventEmitter {
 
     /**
      * Creates and returns a new amqp channel using the current connection.
+     * @async
      * @returns {Promise<amqp.Channel>}
      */
     async createChannel() {
@@ -92,7 +93,18 @@ class MessageBroker extends EventEmitter {
         }
     };
 
-    async assertQueue(channel, queueDefinition) {
+    /**
+     * @private
+     * Declares a queue based on the provided definition.
+     * If an empty string is passed as the definition, an exclusive anonymous queue will be created.
+     *
+     * @async
+     * @param {amqplib.Channel} channel - AMQP channel used to declare the queue.
+     * @param {Object|string} queueDefinition - Queue configuration object or empty string("") for an anonymous queue.
+     *  
+     * @returns {Promise<amqplib.Replies.AssertQueue>} The result of the queue declaration, including the queue name and metadata(messageCount, consumerCount).
+    */
+    async #assertQueue(channel, queueDefinition) {
         // 없다면 익명큐 선언
         if (queueDefinition === "") {
             return await channel.assertQueue("", { exclusive: true });
@@ -103,7 +115,11 @@ class MessageBroker extends EventEmitter {
     }
 
     /**
+    * Sends an RPC message to a specific exchange and waits for a response. 
+    * Publishes a message to the specified exchange using the RPC pattern.
+    * Awaits a response on a temporary, exclusive reply queue.
     * 
+    * @async
     * @param {amqplib.Channel} channel - amqp channel used for publishing.
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
     * @param {string} routingKey - Routing key used for message delivery.
@@ -116,12 +132,7 @@ class MessageBroker extends EventEmitter {
             const { queue: replyQueue } = await channel.assertQueue("", { exclusive: true });
             const consumerTag = uuidv4();
 
-            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type,
-                {
-                    durable: exchangeDefinition.options.durable ?? true,
-                    autoDelete: exchangeDefinition.options.autoDelete ?? false,
-                    internal: exchangeDefinition.options.internal ?? false,
-                });
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, exchangeDefinition.options);
 
             return new Promise((resolve, reject) => {
                 channel.consume(replyQueue, (msg) => {
@@ -150,7 +161,6 @@ class MessageBroker extends EventEmitter {
             });
         } catch (err) {
             system.error("[MESSAGE-BROKER] RPC (PUBLISH): ", err.message);
-            console.dir(err, { depth: null });
             this.emit('error', err);
         }
     }
@@ -162,24 +172,20 @@ class MessageBroker extends EventEmitter {
     * @async
     * @param {amqplib.Channel} channel - The amqp channel used to set up the subscription.
     * @param {Object} exchangeDefinition - ExchangeDefinition config object.
-    * @param {string} bindingKey - The bindingKey used for binding anonymous_q to exchange.
+    * @param {Object} queueDefinition - QueueDefinition config object.
+    * @param {string} bindingKey - The bindingKey used for binding queue of Queuedefinition to exchange.
     * @param {function} onSubscribe - Callback function executed when a message is received.
     * 
-    * It should return the response to be sent back to the RPC caller.
+    * It should return the response to be sent back to the RPC message publisher.
     */
     async subscribeRpcMessage(channel, exchangeDefinition, queueDefinition, bindingKey, onSubscribe) {
 
         try {
             // 내가 binding할 Exchange 존재하는지 확인
-            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type,
-                {
-                    durable: exchangeDefinition.options.durable ?? true,
-                    autoDelete: exchangeDefinition.options.autoDelete ?? false,
-                    internal: exchangeDefinition.options.internal ?? false,
-                });
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, exchangeDefinition.options);
 
-            // exchange와 바인딩할 익명 큐 선언
-            const declaredQueue = await this.assertQueue(channel, queueDefinition);
+            // queueDefinition을 바탕으로 exchange와 바인딩할 익명 큐 선언
+            const declaredQueue = await this.#assertQueue(channel, queueDefinition);
 
             // binding 진행
             await channel.bindQueue(declaredQueue.queue, exchangeDefinition.name, bindingKey);
@@ -212,6 +218,8 @@ class MessageBroker extends EventEmitter {
     /**
     * Publishes a message to a specific exchange using the given exchangeDefinition config.
     * This function is called internally in publishRpcMessage
+    * 
+    * @async
     * @param {amqplib.Channel} channel - amqp channel used for publishing.
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
     * @param {string} routingKey - Routing key used for message delivery.
@@ -220,12 +228,7 @@ class MessageBroker extends EventEmitter {
     */
     async publishToExchange(channel, exchangeDefinition, routingKey, payload, messageProperties = {}) {
         try {
-            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type,
-                {
-                    durable: exchangeDefinition.options.durable ?? true,
-                    autoDelete: exchangeDefinition.options.autoDelete ?? false,
-                    internal: exchangeDefinition.options.internal ?? false,
-                });
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, exchangeDefinition.options);
             channel.publish(exchangeDefinition.name, routingKey, Buffer.from(JSON.stringify(payload)), messageProperties);
             system.info("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchangeDefinition.name, routingKey, JSON.stringify(payload));
         } catch (err) {
@@ -241,21 +244,15 @@ class MessageBroker extends EventEmitter {
     * @async
     * @param {amqplib.Channel} channel - The amqp channel used for exchange and queue operations.
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
+    * @param {Object} queueDefinition - QueueDefinition config object. 
     * @param {string} bindingKey - Binding key used for binding anonymous_q to exchange.
     * @param {function} onSubscribe - Callback function executed when a message is received.
-    * 
-    * It should return the response to be sent back to the RPC caller.
     */
     async subscribeToExchange(channel, exchangeDefinition, queueDefinition, bindingKey, onSubscribe) {
         try {
-            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type,
-                {
-                    durable: exchangeDefinition.options.durable ?? true,
-                    autoDelete: exchangeDefinition.options.autoDelete ?? false,
-                    internal: exchangeDefinition.options.internal ?? false,
-                });
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, exchangeDefinition.options);
 
-            const declaredQueue = await this.assertQueue(channel, queueDefinition);
+            const declaredQueue = await this.#assertQueue(channel, queueDefinition);
 
             await channel.bindQueue(declaredQueue.queue, exchangeDefinition.name, bindingKey);
 
