@@ -106,8 +106,12 @@ class MessageBroker extends EventEmitter {
             const { queue: replyQueue } = await channel.assertQueue("", { exclusive: true });
             const consumerTag = uuidv4();
 
-            // 여기 exchangeDefinition.name으로 써줘야함
-            await channel.assertExchange(exchangeDefinition, exchangeDefinition.type, { durable: exchangeDefinition.durable || false });
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type,
+                {
+                    durable: exchangeDefinition.options.durable ?? true,
+                    autoDelete: exchangeDefinition.options.autoDelete ?? false,
+                    internal: exchangeDefinition.options.internal ?? false,
+                });
 
             return new Promise((resolve, reject) => {
                 channel.consume(replyQueue, (msg) => {
@@ -154,9 +158,15 @@ class MessageBroker extends EventEmitter {
     * It should return the response to be sent back to the RPC caller.
     */
     async subscribeRpcMessage(channel, exchangeDefinition, bindingKey, onSubscribe) {
+
         try {
             // 내가 binding할 Exchange 존재하는지 확인
-            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, { durable: exchangeDefinition.durable || false });
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type,
+                {
+                    durable: exchangeDefinition.options.durable ?? true,
+                    autoDelete: exchangeDefinition.options.autoDelete ?? false,
+                    internal: exchangeDefinition.options.internal ?? false,
+                });
 
             // exchange와 바인딩할 익명 큐 선언
             const anonymous_q = await channel.assertQueue("", { exclusive: true });
@@ -199,7 +209,12 @@ class MessageBroker extends EventEmitter {
     */
     async publishToExchange(channel, exchangeDefinition, routingKey, payload, messageProperties = {}) {
         try {
-            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, { durable: exchangeDefinition.durable || false });
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type,
+                {
+                    durable: exchangeDefinition.options.durable ?? true,
+                    autoDelete: exchangeDefinition.options.autoDelete ?? false,
+                    internal: exchangeDefinition.options.internal ?? false,
+                });
             channel.publish(exchangeDefinition.name, routingKey, Buffer.from(JSON.stringify(payload)), messageProperties);
             system.info("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchangeDefinition.name, routingKey, JSON.stringify(payload));
         } catch (err) {
@@ -222,7 +237,12 @@ class MessageBroker extends EventEmitter {
     */
     async subscribeToExchange(channel, exchangeDefinition, bindingKey, onSubscribe) {
         try {
-            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, { durable: exchangeDefinition.durable || false});
+            await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type,
+                {
+                    durable: exchangeDefinition.options.durable ?? true,
+                    autoDelete: exchangeDefinition.options.autoDelete ?? false,
+                    internal: exchangeDefinition.options.internal ?? false,
+                });
 
             const anonymous_q = await channel.assertQueue("", { exclusive: true });
 

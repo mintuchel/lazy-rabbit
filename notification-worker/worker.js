@@ -3,7 +3,7 @@ const { env } = require('../config');
 const system = require("../system");
 
 // topic-exchange
-class NotificationServer {
+class NotificationWorker {
     constructor(exchangeDefinition, bindingKey, onSubscribe) {
         this.channel = null;
         this.exchange = exchangeDefinition;
@@ -25,7 +25,7 @@ class NotificationServer {
 
         system.debug("NotificationServer start");
         setInterval(() => {
-            system.debug("NotificationServer is running");
+            system.debug("NotificationWorker is running");
         }, env.HEARTBEAT_INTERVAL_MS);
     }
 
@@ -34,12 +34,12 @@ class NotificationServer {
             try {
                 await this.channel.close();
                 this.channel = null;
-                system.debug(`[NotificationServer] Channel for ${this.bindingKey} closed`);
+                system.debug(`[NotificationWorker] Channel for ${this.bindingKey} closed`);
             } catch (err) {
-                system.error(`[NotificationServer] Error closing channel for ${this.bindingKey}:`, err);
+                system.error(`[NotificationWorker] Error closing channel for ${this.bindingKey}:`, err);
             }
         }
     }
 }
 
-module.exports = { NotificationServer };
+module.exports = { NotificationWorker };

@@ -1,7 +1,7 @@
 const { AppServer } = require("./app-server/server");
 const { RpcServer } = require("./rpc-server/server");
 const { DirectServer } = require("./direct-server/server");
-const { NotificationServer } = require("./notification-server/server");
+const { NotificationWorker } = require("./notification-worker/worker");
 const { ExchangeDefinitions } = require("./rabbitmq/exchange");
 const { messageBroker } = require("./rabbitmq");
 
@@ -18,16 +18,16 @@ class Application {
       system.info("[RECIEVED] DirectServer B:", msg.content.toString());
     });
 
-    this.groupNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.*', (msg) => {
-      system.info("[RECIEVED] NotificationServer (GROUP):", msg.content.toString());
+    this.smsWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'notify.sms.#', (msg) => {
+      system.info("[RECIEVED] Worker (SMS):", msg.content.toString());
     });
 
-    this.myNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.mjh', (msg) => {
-      system.info("[RECIEVED] NotificationServer (MJH):", msg.content.toString());
+    this.emailWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'notify.email.#', (msg) => {
+      system.info("[RECIEVED] Worker (EMAIL):", msg.content.toString());
     });
 
-    this.moonNotificationServer = new NotificationServer(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'echoit.moon', (msg) => {
-      system.info("[RECIEVED] NotificationServer (MOON):", msg.content.toString());
+    this.slackWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, 'notify.slack.#', (msg) => {
+      system.info("[RECIEVED] Worker (SLACK):", msg.content.toString());
     });
   }
 
@@ -63,9 +63,9 @@ class Application {
       this.rpcServer.run();
       this.directServerA.run();
       this.directServerB.run();
-      this.groupNotificationServer.run();
-      this.myNotificationServer.run();
-      this.moonNotificationServer.run();
+      this.smsWorker.run();
+      this.emailWorker.run();
+      this.slackWorker.run();
       system.debug("Application started successfully");
     } catch (error) {
       system.error("Error starting application:", error);
@@ -78,9 +78,9 @@ class Application {
     system.debug("Shutting down gracefully...");
     try {
       // 역순으로 서비스 종료하기
-      if (this.moonNotificationServer) await this.moonNotificationServer.shutdown();
-      if (this.myNotificationServer) await this.myNotificationServer.shutdown();
-      if (this.groupNotificationServer) await this.groupNotificationServer.shutdown();
+      if (this.smsWorker) await this.smsWorker.shutdown();
+      if (this.emailWorker) await this.emailWorker.shutdown();
+      if (this.slackWorker) await this.slackWorker.shutdown();
       if (this.directServerB) await this.directServerB.shutdown();
       if (this.directServerA) await this.directServerA.shutdown();
       if (this.rpcServer) await this.rpcServer.shutdown();

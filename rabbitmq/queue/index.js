@@ -1,6 +1,4 @@
-const { ExchangeType } = require("./types");
-
-const ExchangeDefinitions = {
+const QueueDefinitions = {
     FANOUT_EXCHANGE: {
         name: 'avocado.fanout.exchange',
         type: ExchangeType.FANOUT,
@@ -39,4 +37,4 @@ const ExchangeDefinitions = {
     }
 };
 
-module.exports = { ExchangeDefinitions };
+module.exports = { QueueDefinitions };
