@@ -2,7 +2,7 @@ const { messageBroker } = require("../rabbitmq");
 const { env } = require('../config');
 const system = require("../system");
 
-class RpcServer {
+class RpcWorker {
     constructor(exchangeDefinition, queueDefinition) {
         this.channel = null;
         this.exchangeDefinition = exchangeDefinition;
@@ -12,15 +12,15 @@ class RpcServer {
 
     async init() {
         this.channel = await messageBroker.createChannel();
-        system.info("[RpcServer] Waiting for RPC messages on exchange : %s", this.exchangeDefinition.name);
+        system.info("[RpcWorker] Waiting for RPC messages on exchange : %s", this.exchangeDefinition.name);
     }
 
     // 메시지 받으면 실행할 비즈니스 로직
     async onSubscribe(messagePayload) {
-        system.info('[RECIEVED] RPCServer: ', messagePayload);
+        system.info('[RECIEVED] RpcWorker: ', messagePayload);
         return {
             success: true,
-            message: "this is response message by rpc-server!"
+            message: "this is response message by rpc-worker!"
         };
     }
 
@@ -31,9 +31,9 @@ class RpcServer {
 
         messageBroker.subscribeRpcMessage(this.channel, this.exchangeDefinition, "", this.bindingKey, this.onSubscribe);
     
-        system.debug("RPCServer start");
+        system.debug("RpcWorker start");
         setInterval(() => {
-            system.debug("RPCServer is running");
+            system.debug("RpcWorker is running");
         }, env.HEARTBEAT_INTERVAL_MS);
     }
 
@@ -42,12 +42,12 @@ class RpcServer {
             try {
                 await this.channel.close();
                 this.channel = null;
-                system.debug("[RpcServer] Channel closed");
+                system.debug("[RpcWorker] Channel closed");
             } catch (err) {
-                system.error("[RpcServer] Error closing channel:", err);
+                system.error("[RpcWorker] Error closing channel:", err);
             }
         }
     }
 }
 
-module.exports = { RpcServer };
+module.exports = { RpcWorker };

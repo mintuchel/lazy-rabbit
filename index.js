@@ -1,5 +1,5 @@
 const { AppServer } = require("./app-server/server");
-const { RpcServer } = require("./rpc-server/server");
+const { RpcWorker } = require("./rpc-worker");
 const { DirectServer } = require("./direct-server/server");
 const { NotificationWorker } = require("./notification-worker/worker");
 const { ExchangeDefinitions } = require("./rabbitmq/exchange");
@@ -11,7 +11,7 @@ const system = require("./system");
 class Application {
   constructor() {
     this.appServer = new AppServer();
-    this.rpcServer = new RpcServer(ExchangeDefinitions.RPC_EXCHANGE);
+    this.rpcWorker = new RpcWorker(ExchangeDefinitions.RPC_EXCHANGE);
     this.directServerA = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, "", 'A', (msg) => {
       system.info("[RECIEVED] DirectServer A:", msg.content.toString());
     });
@@ -61,7 +61,7 @@ class Application {
       await messageBroker.run();
       
       this.appServer.run();
-      this.rpcServer.run();
+      this.rpcWorker.run();
       this.directServerA.run();
       this.directServerB.run();
       this.smsWorker.run();
@@ -84,7 +84,7 @@ class Application {
       if (this.slackWorker) await this.slackWorker.shutdown();
       if (this.directServerB) await this.directServerB.shutdown();
       if (this.directServerA) await this.directServerA.shutdown();
-      if (this.rpcServer) await this.rpcServer.shutdown();
+      if (this.rpcWorker) await this.rpcWorker.shutdown();
       if (this.appServer) await this.appServer.shutdown();
       if (messageBroker) messageBroker.shutdown();
 
