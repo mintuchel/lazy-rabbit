@@ -1,4 +1,11 @@
 const QueueDefinitions = {
+    RPC_REPLY_QUEUE: {
+        name: 'rpc.reply.queue',
+        options: {
+            durable: false,
+            messageTtl: 5000
+        }
+    },
     NOTIFY_SMS_QUEUE: {
         name: 'notify.sms.queue',
         options: {
