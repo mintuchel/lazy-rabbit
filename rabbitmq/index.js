@@ -125,13 +125,17 @@ class MessageBroker extends EventEmitter {
     * @param {string} routingKey - Routing key used for message delivery.
     * @param {Object} payload - Message body in JSON format.
     */
-    async publishRpcMessage(channel, exchangeDefinition, routingKey, payload) {
+    async publishRpcMessage(channel, exchangeDefinition, queueDefinition, routingKey, payload) {
         try {
             const correlationId = uuidv4();
-            // Consumer로부터 응답을 받기 위한 익명큐 하나 선언
-            const { queue: replyQueue } = await channel.assertQueue("", { exclusive: true });
+
+            // queueDefinition을 바탕으로 응답받을 큐 선언
+            // 구조분해할당으로 queue 값을 replyQueue로 사용
+            const { queue: replyQueue } = await this.#assertQueue(channel, queueDefinition);
+
             const consumerTag = uuidv4();
 
+            // 메시지 발행할 Exchange 선언
             await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, exchangeDefinition.options);
 
             return new Promise((resolve, reject) => {
@@ -184,13 +188,14 @@ class MessageBroker extends EventEmitter {
             // 내가 binding할 Exchange 존재하는지 확인
             await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, exchangeDefinition.options);
 
-            // queueDefinition을 바탕으로 exchange와 바인딩할 익명 큐 선언
-            const declaredQueue = await this.#assertQueue(channel, queueDefinition);
+            // queueDefinition을 바탕으로 exchange와 바인딩할 큐 선언
+            // 구조분해할당으로 queue 값을 replyQueue로 사용
+            const { queue: declaredQueue } = await this.#assertQueue(channel, queueDefinition);
 
             // binding 진행
-            await channel.bindQueue(declaredQueue.queue, exchangeDefinition.name, bindingKey);
+            await channel.bindQueue(declaredQueue, exchangeDefinition.name, bindingKey);
 
-            channel.consume(declaredQueue.queue, async (msg) => {
+            channel.consume(declaredQueue, async (msg) => {
                 if (!msg) return;
 
                 const payload = JSON.parse(msg.content.toString());
@@ -252,11 +257,11 @@ class MessageBroker extends EventEmitter {
         try {
             await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, exchangeDefinition.options);
 
-            const declaredQueue = await this.#assertQueue(channel, queueDefinition);
+            const { queue: declaredQueue } = await this.#assertQueue(channel, queueDefinition);
 
-            await channel.bindQueue(declaredQueue.queue, exchangeDefinition.name, bindingKey);
+            await channel.bindQueue(declaredQueue, exchangeDefinition.name, bindingKey);
 
-            channel.consume(declaredQueue.queue, function (msg) {
+            channel.consume(declaredQueue, function (msg) {
                 if (msg.content) {
                     onSubscribe(msg);
                 }
