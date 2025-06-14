@@ -3,9 +3,10 @@ const { env } = require('../config');
 const system = require("../system");
 
 class RpcServer {
-    constructor(exchangeDefinition) {
+    constructor(exchangeDefinition, queueDefinition) {
         this.channel = null;
         this.exchangeDefinition = exchangeDefinition;
+        this.queueDefinition = queueDefinition;
         this.bindingKey = 'avocado.rpc';
     }
 
