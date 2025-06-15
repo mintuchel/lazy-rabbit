@@ -1,5 +1,5 @@
 const { messageBroker } = require("../../rabbitmq");
-const { ExchangeDefinitions } = require("../../rabbitmq/exchange");
+const { ExchangeDefinitions } = require("../../rabbitmq/config/exchange");
 
 let channel;
 const exchange = ExchangeDefinitions.DIRECT_EXCHANGE;

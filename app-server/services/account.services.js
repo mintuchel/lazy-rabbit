@@ -1,5 +1,4 @@
 const { AccountRepository } = require("../../db/repository/account.repository");
-const { RedisService } = require("../../redis");
 
 const AccountService = {
     async getAccounts() {
@@ -21,10 +20,6 @@ const AccountService = {
     async deleteAccount(uid) {
         return await AccountRepository.deleteById(uid);
     },
-
-    async login(uid, password) {
-        await RedisService.save(uid, password);
-    }
 };
 
 module.exports = { AccountService };

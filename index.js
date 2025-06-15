@@ -1,35 +1,23 @@
 const { AppServer } = require("./app-server/server");
 const { RpcWorker } = require("./rpc-worker");
-const { DirectServer } = require("./direct-server/server");
-const { NotificationWorker } = require("./notification-worker/worker");
-const { ExchangeDefinitions } = require("./rabbitmq/exchange");
-const { QueueDefinitions } = require("./rabbitmq/queue");
+const { ExchangeDefinitions } = require("./rabbitmq/config/exchange");
 const { messageBroker } = require("./rabbitmq");
-
 const system = require("./system");
+const { WorkerA } = require("./direct-worker/workerA");
+const { WorkerB } = require("./direct-worker/workerB");
+const { SMSWorker } = require("./notification/sms-worker");
+const { EmailWorker } = require("./notification/email-worker");
+const { SlackWorker } = require("./notification/slack-worker");
 
 class Application {
   constructor() {
     this.appServer = new AppServer();
     this.rpcWorker = new RpcWorker(ExchangeDefinitions.RPC_EXCHANGE);
-    this.directServerA = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, "", 'A', (msg) => {
-      system.info("[RECIEVED] DirectServer A:", msg.content.toString());
-    });
-    this.directServerB = new DirectServer(ExchangeDefinitions.DIRECT_EXCHANGE, "", 'B', (msg) => {
-      system.info("[RECIEVED] DirectServer B:", msg.content.toString());
-    });
-
-    this.smsWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, QueueDefinitions.NOTIFY_SMS_QUEUE, 'notify.sms.#', (msg) => {
-      system.info("[RECIEVED] Worker (SMS):", msg.content.toString());
-    });
-
-    this.emailWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, QueueDefinitions.NOTIFY_EMAIL_QUEUE, 'notify.email.#', (msg) => {
-      system.info("[RECIEVED] Worker (EMAIL):", msg.content.toString());
-    });
-
-    this.slackWorker = new NotificationWorker(ExchangeDefinitions.NOTIFICATION_EXCHANGE, QueueDefinitions.NOTIFY_SLACK_QUEUE, 'notify.slack.#', (msg) => {
-      system.info("[RECIEVED] Worker (SLACK):", msg.content.toString());
-    });
+    this.workerA = new WorkerA();
+    this.workerB = new WorkerB();
+    this.smsWorker = new SMSWorker();
+    this.emailWorker = new EmailWorker();
+    this.slackWorker = new SlackWorker();
   }
 
   async start() {
@@ -62,8 +50,8 @@ class Application {
       
       this.appServer.run();
       this.rpcWorker.run();
-      this.directServerA.run();
-      this.directServerB.run();
+      this.workerA.run();
+      this.workerB.run();
       this.smsWorker.run();
       this.emailWorker.run();
       this.slackWorker.run();
@@ -82,8 +70,8 @@ class Application {
       if (this.smsWorker) await this.smsWorker.shutdown();
       if (this.emailWorker) await this.emailWorker.shutdown();
       if (this.slackWorker) await this.slackWorker.shutdown();
-      if (this.directServerB) await this.directServerB.shutdown();
-      if (this.directServerA) await this.directServerA.shutdown();
+      if (this.workerB) await this.workerB.shutdown();
+      if (this.workerA) await this.workerA.shutdown();
       if (this.rpcWorker) await this.rpcWorker.shutdown();
       if (this.appServer) await this.appServer.shutdown();
       if (messageBroker) messageBroker.shutdown();

@@ -1,6 +1,6 @@
 const { messageBroker } = require("../../rabbitmq");
-const { ExchangeDefinitions } = require("../../rabbitmq/exchange");
-const { QueueDefinitions } = require("../../rabbitmq/queue");
+const { ExchangeDefinitions } = require("../../rabbitmq/config/exchange");
+const { QueueDefinitions } = require("../../rabbitmq/config/queue");
 
 const exchangeDefinition = ExchangeDefinitions.RPC_EXCHANGE;
 const queueDefinition = QueueDefinitions.RPC_REPLY_QUEUE;

@@ -30,7 +30,7 @@ class MessageBroker extends EventEmitter {
         });
 
         this.on('close', () => {
-            this.connection = null;
+            this.#connection = null;
             system.error('[MESSAGE-BROKER] Connection closed');
         });
     }
