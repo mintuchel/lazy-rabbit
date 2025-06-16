@@ -28,9 +28,9 @@ class Worker extends EventEmitter {
             try {
                 await this.channel.close();
                 this.channel = null;
-                system.debug(`[NotificationWorker] Channel for ${this.bindingKey} closed`);
+                system.debug("[%s] Channel for %s closed", this.name, this.bindingKey);
             } catch (err) {
-                system.error(`[NotificationWorker] Error closing channel for ${this.bindingKey}:`, err);
+                system.error("[%s] Error closing channel for %s:", this.name, this.bindingKey);
             }
         }
     }

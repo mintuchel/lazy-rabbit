@@ -12,11 +12,11 @@ class MessageDispatcher extends EventEmitter {
         this.#handlerMap = new Map();
 
         this.on('notfound', (routingKey) => {
-            system.info('[MessageDispatcher] Cannot find dispatcher matched with', routingKey);
+            system.info('[MessageDispatcher] Cannot find handler matched with', routingKey);
         });
 
         this.on('error', (err) => {
-            system.info('[MessageDispatcher] Error when handling message :', err);
+            system.info('[MessageDispatcher] Error when dispatching... :', err);
         });
     }
 
@@ -29,19 +29,19 @@ class MessageDispatcher extends EventEmitter {
     async dispatch(msg) {
         const routingKey = msg.fields.routingKey;
         const payload = JSON.parse(msg.content.toString());
+
+        if (!this.#handlerMap.has(routingKey)) {
+            this.emit('notfound', routingKey);
+        }
+
         const handler = this.#handlerMap.get(routingKey);
 
-        if (handler) {
-            try {
-                const result = await handler(payload);
-                return result;
-            } catch (err) {
-                this.emit('error', err);
-                throw err;
-            }
-        } else {
-            this.emit('notfound', routingKey);
-            throw new Error(`No handler found for routing key: ${routingKey}`);
+        try {
+            const result = await handler(payload);
+            return result;
+        } catch (err) {
+            this.emit('error', err);
+            throw err;
         }
     }
 }
