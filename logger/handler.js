@@ -7,7 +7,7 @@ async function onWarn(msg) {
 }
 
 async function onError(msg) {
-
+    system.error("[RECIEVED] Logger :", msg);
 }
 
 module.exports = { onWarn, onError };

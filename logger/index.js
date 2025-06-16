@@ -3,14 +3,13 @@ const { env } = require('../config');
 const { WorkerDefinitions } = require("../rabbitmq/config/worker");
 const { Worker } = require("../rabbitmq/worker");
 const system = require("../system");
+const { onWarn, onError } = require("./handler");
 
 class Logger extends Worker {
     constructor() {
         super(WorkerDefinitions.LOGGER);
-    }
-
-    async init() {
-        
+        this.registerHandler("logger.warn", onWarn);
+        this.registerHandler("logger.error", onError);
     }
 
     async run() {
@@ -18,7 +17,7 @@ class Logger extends Worker {
             await this.init();
         }
 
-        messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.onSubscribe);
+        messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.messageDispatcher.dispatch.bind(this.messageDispatcher));
     
         system.debug("Logger start");
         setInterval(() => {

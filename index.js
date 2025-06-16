@@ -8,6 +8,7 @@ const { WorkerB } = require("./direct-worker/workerB");
 const { SMSWorker } = require("./notification/sms-worker");
 const { EmailWorker } = require("./notification/email-worker");
 const { SlackWorker } = require("./notification/slack-worker");
+const Logger = require("./logger");
 
 class Application {
   constructor() {
@@ -18,6 +19,7 @@ class Application {
     this.smsWorker = new SMSWorker();
     this.emailWorker = new EmailWorker();
     this.slackWorker = new SlackWorker();
+    this.logger = new Logger();
   }
 
   async start() {
@@ -55,6 +57,7 @@ class Application {
       this.smsWorker.run();
       this.emailWorker.run();
       this.slackWorker.run();
+      this.logger.run();
       system.debug("Application started successfully");
     } catch (error) {
       system.error("Error starting application:", error);
@@ -67,6 +70,7 @@ class Application {
     system.debug("Shutting down gracefully...");
     try {
       // 역순으로 서비스 종료하기
+      if (this.logger) await this.logger.shutdown();
       if (this.smsWorker) await this.smsWorker.shutdown();
       if (this.emailWorker) await this.emailWorker.shutdown();
       if (this.slackWorker) await this.slackWorker.shutdown();
