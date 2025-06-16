@@ -10,7 +10,7 @@ class SlackWorker extends Worker{
     }
 
     onSubscribe(msg) {
-        system.info("[RECIEVED] Worker (Slack):", msg.content.toString());
+        system.info("[RECIEVED] Worker (Slack): ", msg.content.toString());
     }
     
     async run() {

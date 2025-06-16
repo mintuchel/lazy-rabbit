@@ -10,7 +10,7 @@ class EmailWorker extends Worker{
     }
 
     onSubscribe(msg) {
-        system.info("[RECIEVED] Worker (Email):", msg.content.toString());
+        system.info("[RECIEVED] Worker (Email): ", msg.content.toString());
     }
     
     async run() {

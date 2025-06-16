@@ -10,7 +10,7 @@ class SMSWorker extends Worker {
     }
 
     onSubscribe(msg) {
-        system.info("[RECIEVED] Worker (SMS):", msg.content.toString());
+        system.info("[RECIEVED] Worker (SMS): ", msg.content.toString());
     }
 
     async run() {
