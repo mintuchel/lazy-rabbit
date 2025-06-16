@@ -2,13 +2,19 @@ const { messageBroker } = require("../../rabbitmq");
 const { ExchangeDefinitions } = require("../../rabbitmq/config/exchange");
 
 let channel;
-const exchange = ExchangeDefinitions.DIRECT_EXCHANGE;
 
 async function sendDirectMessage(payload) {
     if (!channel) {
         channel = await messageBroker.createChannel();
     }
-    return await messageBroker.publishToExchange(channel, exchange, payload.routingType, payload.message);
+    messageBroker.publishToExchange(channel, ExchangeDefinitions.DIRECT_EXCHANGE, payload.routingType, payload.message);
 }
 
-module.exports = { sendDirectMessage };
+async function sendLogMessage(payload) {
+    if (!channel) {
+        channel = await messageBroker.createChannel();
+    }
+    messageBroker.publishToExchange(channel, ExchangeDefinitions.LOGGER_EXCHANGE, payload.routingType, payload.message);
+}
+
+module.exports = { sendDirectMessage, sendLogMessage };

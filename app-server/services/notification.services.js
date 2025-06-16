@@ -8,8 +8,7 @@ async function sendNotificationMessage(payload) {
     if (!channel) {
         channel = await messageBroker.createChannel();
     }
-    console.log(payload);
-    return await messageBroker.publishToExchange(channel, exchange, payload.routingType, payload.message);
+    messageBroker.publishToExchange(channel, exchange, payload.routingType, payload.message);
 }
 
 module.exports = { sendNotificationMessage };
