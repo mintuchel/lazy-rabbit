@@ -17,7 +17,8 @@ class Logger extends Worker {
             await this.init();
         }
 
-        messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.messageDispatcher.dispatch.bind(this.messageDispatcher));
+        // to use dispatch in callback, we need to bind current "this" to use same context
+        messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.dispatch.bind(this));
     
         system.debug("Logger start");
         setInterval(() => {

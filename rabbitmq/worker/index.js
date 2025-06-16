@@ -1,9 +1,9 @@
 const { messageBroker } = require("..");
 const system = require("../../system");
 const { EventEmitter } = require('events');
-const MessageDispatcher = require("./dispatcher");
 
 class Worker extends EventEmitter {
+
     constructor(config) {
         super();
         this.channel = null;
@@ -11,7 +11,15 @@ class Worker extends EventEmitter {
         this.exchangeDefinition = config.exchangeDefinition;
         this.queueDefinition = config.queueDefinition;
         this.bindingKey = config.bindingKey;
-        this.messageDispatcher = new MessageDispatcher();
+        this.handlerMap = new Map();
+
+        this.on('notfound', (routingKey) => {
+            system.info('[MessageDispatcher] Cannot find handler matched with', routingKey);
+        });
+
+        this.on('error', (err) => {
+            system.info('[MessageDispatcher] Error when dispatching... :', err);
+        });
     }
 
     async init() {
@@ -20,7 +28,26 @@ class Worker extends EventEmitter {
     }
 
     registerHandler(routingKey, callback) {
-        this.messageDispatcher.registerHandler(routingKey, callback);
+        this.handlerMap.set(routingKey, callback);
+    }
+
+    async dispatch(msg) {
+        const routingKey = msg.fields.routingKey;
+        const payload = JSON.parse(msg.content.toString());
+
+        if (!this.handlerMap.has(routingKey)) {
+            this.emit('notfound', routingKey);
+        }
+
+        const handler = this.handlerMap.get(routingKey);
+
+        try {
+            const result = await handler(payload);
+            return result;
+        } catch (err) {
+            this.emit('error', err);
+            throw err; // 이거 안하면 어케 됨? 
+        }
     }
 
     async shutdown() {
