@@ -1,9 +1,9 @@
 const { ExchangeType } = require("./types");
 
 const ExchangeDefinitions = {
-    FANOUT_EXCHANGE: {
-        name: 'avocado.fanout.exchange',
-        type: ExchangeType.FANOUT,
+    LOGGER_EXCHANGE: {
+        name: 'avocado.logger.exchange',
+        type: ExchangeType.TOPIC,
         options: {
             durable: false,
             autoDelete: true,

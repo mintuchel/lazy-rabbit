@@ -2,6 +2,12 @@ const { ExchangeDefinitions } = require("../exchange");
 const { QueueDefinitions } = require("../queue");
 
 const WorkerDefinitions = {
+    LOGGER: {
+        name: 'Logger',
+        exchangeDefinition: ExchangeDefinitions.LOGGER_EXCHANGE,
+        queueDefinition: '',
+        bindingKey: 'logger.#'
+    },
     WORKER_A: {
         name: 'Worker A',
         exchangeDefinition: ExchangeDefinitions.DIRECT_EXCHANGE,
