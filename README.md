@@ -1,8 +1,8 @@
 # lazy-rabbit
 
-<div style="text-align: center;">
+<p align="center">
   <img src="https://github.com/user-attachments/assets/d010b754-a3fb-4fb0-906e-8dd1adfee401" width="200" />
-</div>
+</p>
 
 A lightweight wrapper around [amqplib](https://www.npmjs.com/package/amqplib) for [RabbitMQ](https://www.rabbitmq.com/docs) that simplifies configuration and message workflows for publishing and consuming - _allowing you to be lazy_
 
