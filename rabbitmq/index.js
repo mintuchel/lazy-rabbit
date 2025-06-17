@@ -7,11 +7,11 @@ const system = require("../system");
 class MessageBroker extends EventEmitter {
 
     /**
-    * @private
-    * A single, shared amqp connection instance.
-    * Created once and reused for all operations within this class only.
-    * Not exposed outside the MessageBroker class.
-    */
+     * @private
+     * A single, shared amqp connection instance.
+     * Created once and reused for all operations within this class only.
+     * Not exposed outside the MessageBroker class.
+     */
     #connection = null;
 
     constructor() {

@@ -2,17 +2,37 @@ const messageBroker = require("..");
 const system = require("../../system");
 const { EventEmitter } = require('events');
 
+/**
+ * @abstract_like
+ * Worker class that listens for messages matching its bindingKey, and dispatches them to the appropriate handler based on the message's routingKey.
+ *
+ * This class supports dynamic registration of handlers for different routingKeys,
+ * making it suitable for multitask or multi-routingKey message processing.
+ *
+ * Extend this class to implement specialized workers or consumers 
+ * for handling specific sets of messages in a modular architecture.
+ *
+ * Typically used in a microservices or event-driven architecture 
+ * where each worker is responsible for handling a subset of tasks.
+ */
 class Worker extends EventEmitter {
+
+    /**
+     * @private
+     * Internal map that stores handler functions associated with each routing key.
+     */
+    #handlerMap = null;
 
     constructor(config) {
         super();
         this.channel = null;
+        this.#handlerMap = new Map();
+
         this.name = config.name;
         this.exchangeDefinition = config.exchangeDefinition;
         this.queueDefinition = config.queueDefinition;
         this.bindingKey = config.bindingKey;
-        this.handlerMap = new Map();
-
+    
         this.on('notfound', (routingKey) => {
             system.info('[MessageDispatcher] Cannot find handler matched with', routingKey);
         });
@@ -22,31 +42,46 @@ class Worker extends EventEmitter {
         });
     }
 
+    // Initializes the amqp channel
     async init() {
         this.channel = await messageBroker.createChannel();
         system.info("[%s] Waiting for routingKey %s messages", this.name, this.bindingKey);
     }
 
+    /**
+     * Registers a handler callback function for a specific routingKey.
+     * When a message arrives that matches the routingKey, the corresponding registered handler will be invoked to process the message.
+     * 
+     * @param {string} routingKey - The routingKey to associate with the callback.
+     * @param {Function} callback - A function that will handle the message when the routingKey matches
+     */
     registerHandler(routingKey, callback) {
-        this.handlerMap.set(routingKey, callback);
+        this.#handlerMap.set(routingKey, callback);
     }
 
+    /**
+     * Dispatches an incoming message to the appropriate handler based on message's routingKey.
+     * 
+     * This allows each worker to handle multiple messages dynamically depending on the routingKey.
+     * @async
+     * @param {amqplib.Message} msg - Pure amqp message produced by producer
+     */
     async dispatch(msg) {
         const routingKey = msg.fields.routingKey;
         const payload = JSON.parse(msg.content.toString());
 
-        if (!this.handlerMap.has(routingKey)) {
+        if (!this.#handlerMap.has(routingKey)) {
             this.emit('notfound', routingKey);
         }
 
-        const handler = this.handlerMap.get(routingKey);
+        const handler = this.#handlerMap.get(routingKey);
 
         try {
             const result = await handler(payload);
             return result;
         } catch (err) {
             this.emit('error', err);
-            throw err; // 이거 안하면 어케 됨? 
+            throw err;
         }
     }
 
