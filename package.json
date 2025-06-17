@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "description": "simple network engine which can be scaled out easily",
   "dependencies": {
     "amqplib": "^0.10.8",
