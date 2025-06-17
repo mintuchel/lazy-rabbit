@@ -1,4 +1,4 @@
-const { messageBroker } = require("..");
+const messageBroker = require("..");
 const system = require("../../system");
 const { EventEmitter } = require('events');
 
@@ -63,4 +63,4 @@ class Worker extends EventEmitter {
     }
 }
 
-module.exports = { Worker };
+module.exports = Worker;

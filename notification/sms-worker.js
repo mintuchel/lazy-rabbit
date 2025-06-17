@@ -1,8 +1,8 @@
-const { messageBroker } = require("../rabbitmq");
+const messageBroker = require("../rabbitmq");
 const { env } = require('../config');
 const system = require("../system");
-const { Worker } = require("../rabbitmq/worker");
-const { WorkerDefinitions } = require("../rabbitmq/config/worker");
+const Worker = require("../rabbitmq/worker");
+const WorkerDefinitions = require("../rabbitmq/config/worker");
 
 class SMSWorker extends Worker {
     constructor() {
@@ -27,4 +27,4 @@ class SMSWorker extends Worker {
     }
 }
 
-module.exports = { SMSWorker };
+module.exports = SMSWorker;

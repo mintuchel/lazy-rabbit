@@ -59,4 +59,4 @@ class AppServer {
     }
 }
 
-module.exports = { AppServer };
+module.exports = AppServer;

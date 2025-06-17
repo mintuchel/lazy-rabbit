@@ -5,4 +5,4 @@ const ExchangeType = {
     HEADERS: 'headers'
 };
 
-module.exports = { ExchangeType };
+module.exports = ExchangeType;

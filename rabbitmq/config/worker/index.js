@@ -1,5 +1,5 @@
-const { ExchangeDefinitions } = require("../exchange");
-const { QueueDefinitions } = require("../queue");
+const ExchangeDefinitions = require("../exchange");
+const QueueDefinitions = require("../queue");
 
 const WorkerDefinitions = {
     LOGGER: {
@@ -46,4 +46,4 @@ const WorkerDefinitions = {
     }
 };
 
-module.exports = { WorkerDefinitions };
+module.exports = WorkerDefinitions;

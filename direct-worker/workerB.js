@@ -1,10 +1,10 @@
-const { messageBroker } = require("../rabbitmq");
+const messageBroker = require("../rabbitmq");
 const { env } = require('../config');
 const system = require("../system");
-const { WorkerDefinitions } = require("../rabbitmq/config/worker");
-const { Worker } = require("../rabbitmq/worker");
+const WorkerDefinitions = require("../rabbitmq/config/worker");
+const Worker = require("../rabbitmq/worker");
 
-class WorkerB extends Worker{
+class WorkerB extends Worker {
     constructor() {
         super(WorkerDefinitions.WORKER_B);
     }
@@ -19,7 +19,7 @@ class WorkerB extends Worker{
         }
 
         messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.onSubscribe);
-    
+
         system.debug("WorkerB start");
         setInterval(() => {
             system.debug("WorkerB is running");
@@ -27,4 +27,4 @@ class WorkerB extends Worker{
     }
 }
 
-module.exports = { WorkerB };
+module.exports = WorkerB;

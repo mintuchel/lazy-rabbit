@@ -29,4 +29,4 @@ const QueueDefinitions = {
     }
 };
 
-module.exports = { QueueDefinitions };
+module.exports = QueueDefinitions;

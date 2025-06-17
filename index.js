@@ -1,13 +1,13 @@
-const { AppServer } = require("./app-server/server");
-const { RpcWorker } = require("./rpc-worker");
-const { ExchangeDefinitions } = require("./rabbitmq/config/exchange");
-const { messageBroker } = require("./rabbitmq");
+const RpcWorker = require("./rpc-worker");
+const AppServer = require("./app-server/server");
+const { env } = require('./config');
+const WorkerA = require("./direct-worker/workerA");
+const WorkerB = require("./direct-worker/workerB");
+const SMSWorker = require("./notification/sms-worker");
+const EmailWorker = require("./notification/email-worker");
+const SlackWorker = require("./notification/slack-worker");
 const system = require("./system");
-const { WorkerA } = require("./direct-worker/workerA");
-const { WorkerB } = require("./direct-worker/workerB");
-const { SMSWorker } = require("./notification/sms-worker");
-const { EmailWorker } = require("./notification/email-worker");
-const { SlackWorker } = require("./notification/slack-worker");
+const messageBroker = require("./rabbitmq");
 const Logger = require("./logger");
 
 class Application {
@@ -49,7 +49,7 @@ class Application {
       // connection 하나만 생성되게 하기 위해 messageBroker.run 에 await 걸기 -> 이거 없으면 아래꺼 다같이 비동기적으로 진행해서 connection이 평균 3-4개 생성됨
       // 그 이후부터는 비동기적으로 진행
       await messageBroker.run();
-      
+
       this.appServer.run();
       this.rpcWorker.run();
       this.workerA.run();

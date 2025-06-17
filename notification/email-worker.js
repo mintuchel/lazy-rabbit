@@ -1,10 +1,10 @@
-const { messageBroker } = require("../rabbitmq");
+const messageBroker = require("../rabbitmq");
 const { env } = require('../config');
 const system = require("../system");
-const { WorkerDefinitions } = require("../rabbitmq/config/worker");
-const { Worker } = require("../rabbitmq/worker");
+const WorkerDefinitions = require("../rabbitmq/config/worker");
+const Worker = require("../rabbitmq/worker");
 
-class EmailWorker extends Worker{
+class EmailWorker extends Worker {
     constructor() {
         super(WorkerDefinitions.EMAIL_WORKER);
     }
@@ -12,7 +12,7 @@ class EmailWorker extends Worker{
     onSubscribe(msg) {
         system.info("[RECIEVED] Worker (Email): ", msg.content.toString());
     }
-    
+
     async run() {
         if (!this.channel) {
             await this.init();
@@ -27,4 +27,4 @@ class EmailWorker extends Worker{
     }
 }
 
-module.exports = { EmailWorker };
+module.exports = EmailWorker;

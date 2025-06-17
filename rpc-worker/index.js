@@ -1,10 +1,10 @@
-const { messageBroker } = require("../rabbitmq");
+const messageBroker = require("../rabbitmq");
 const { env } = require('../config');
 const system = require("../system");
-const { Worker } = require("../rabbitmq/worker");
-const { WorkerDefinitions } = require("../rabbitmq/config/worker");
+const Worker = require("../rabbitmq/worker");
+const WorkerDefinitions = require("../rabbitmq/config/worker");
 
-class RpcWorker extends Worker{
+class RpcWorker extends Worker {
     constructor() {
         super(WorkerDefinitions.RPC_WORKER);
     }
@@ -24,7 +24,7 @@ class RpcWorker extends Worker{
         }
 
         messageBroker.subscribeRpcMessage(this.channel, this.exchangeDefinition, "", this.bindingKey, this.onSubscribe);
-    
+
         system.debug("RpcWorker start");
         setInterval(() => {
             system.debug("RpcWorker is running");
@@ -32,4 +32,4 @@ class RpcWorker extends Worker{
     }
 }
 
-module.exports = { RpcWorker };
+module.exports = RpcWorker;

@@ -16,11 +16,11 @@ class MessageBroker extends EventEmitter {
 
     constructor() {
         super();
-        
+
         this.on('connected', () => {
             system.info('[MESSAGE-BROKER] Connected to RabbitMQ');
         });
-  
+
         this.on('error', (err) => {
             console.log(err);
         });
@@ -70,8 +70,8 @@ class MessageBroker extends EventEmitter {
      */
     async #getConnection() {
         if (this.#connection) return this.#connection;
-        
-        try{
+
+        try {
             return await this.#createConnection();
         } catch (err) {
             this.emit('error', err);
@@ -266,7 +266,7 @@ class MessageBroker extends EventEmitter {
                     onSubscribe(msg);
                 }
                 channel.ack(msg);
-            },{
+            }, {
                 noAck: false,
             });
         } catch (err) {
@@ -283,4 +283,5 @@ class MessageBroker extends EventEmitter {
 }
 
 const messageBroker = new MessageBroker();
-module.exports = { messageBroker };
+
+module.exports = messageBroker;

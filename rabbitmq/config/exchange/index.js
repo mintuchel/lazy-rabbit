@@ -1,4 +1,4 @@
-const { ExchangeType } = require("./types");
+const ExchangeType = require("./types");
 
 const ExchangeDefinitions = {
     LOGGER_EXCHANGE: {
@@ -39,4 +39,4 @@ const ExchangeDefinitions = {
     }
 };
 
-module.exports = { ExchangeDefinitions };
+module.exports = ExchangeDefinitions;
