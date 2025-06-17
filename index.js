@@ -13,7 +13,7 @@ const Logger = require("./logger");
 class Application {
   constructor() {
     this.appServer = new AppServer();
-    this.rpcWorker = new RpcWorker(ExchangeDefinitions.RPC_EXCHANGE);
+    this.rpcWorker = new RpcWorker();
     this.workerA = new WorkerA();
     this.workerB = new WorkerB();
     this.smsWorker = new SMSWorker();

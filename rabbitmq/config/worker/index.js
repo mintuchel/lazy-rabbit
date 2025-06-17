@@ -38,7 +38,12 @@ const WorkerDefinitions = {
         queueDefinition: QueueDefinitions.NOTIFY_SLACK_QUEUE,
         bindingKey: 'notify.slack.#'
     },
-
+    RPC_WORKER: {
+        name: 'RPC-Worker',
+        exchangeDefinition: ExchangeDefinitions.RPC_EXCHANGE,
+        queueDefinition: '',
+        bindingKey: 'avocado.rpc'
+    }
 };
 
 module.exports = { WorkerDefinitions };

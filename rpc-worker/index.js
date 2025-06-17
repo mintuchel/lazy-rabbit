@@ -1,18 +1,12 @@
 const { messageBroker } = require("../rabbitmq");
 const { env } = require('../config');
 const system = require("../system");
+const { Worker } = require("../rabbitmq/worker");
+const { WorkerDefinitions } = require("../rabbitmq/config/worker");
 
-class RpcWorker {
-    constructor(exchangeDefinition, queueDefinition) {
-        this.channel = null;
-        this.exchangeDefinition = exchangeDefinition;
-        this.queueDefinition = queueDefinition;
-        this.bindingKey = 'avocado.rpc';
-    }
-
-    async init() {
-        this.channel = await messageBroker.createChannel();
-        system.info("[RpcWorker] Waiting for RPC messages on exchange : %s", this.exchangeDefinition.name);
+class RpcWorker extends Worker{
+    constructor() {
+        super(WorkerDefinitions.RPC_WORKER);
     }
 
     // 메시지 받으면 실행할 비즈니스 로직
@@ -20,7 +14,7 @@ class RpcWorker {
         system.info('[RECIEVED] RpcWorker: ', messagePayload);
         return {
             success: true,
-            message: "this is response message by rpc-worker!"
+            message: "this is response message by RPC-Worker!"
         };
     }
 
@@ -35,18 +29,6 @@ class RpcWorker {
         setInterval(() => {
             system.debug("RpcWorker is running");
         }, env.HEARTBEAT_INTERVAL_MS);
-    }
-
-    async shutdown() {
-        if (this.channel) {
-            try {
-                await this.channel.close();
-                this.channel = null;
-                system.debug("[RpcWorker] Channel closed");
-            } catch (err) {
-                system.error("[RpcWorker] Error closing channel:", err);
-            }
-        }
     }
 }
 
