@@ -12,7 +12,7 @@ While the amqplib library offers a great deal of control and flexibility by expo
 
 To address this, lazy-rabbit introduces lightweight wrapper functions around common amqplib publishing and subscribing patterns. With these wrappers, you can send and receive messages more easily by simply providing configuration objects along with routing information (such as routingKey, bindingKey, etc.). The internal logic takes care of interpreting and applying these settings appropriately.
 
-In addition, a base worker class is included. The Worker comes with an internal handlerMap and message dispatcher, allowing you to register callback functions for specific routingKeys. When a message arrives, the appropriate handler is automatically invoked based on the routing key.
+In addition, the base Worker class offers a simple way to build custom consumers through inheritance. Define the exchange, queue, and binding key using the provided schema, then register routing key–specific callbacks using dynamic handler registration —no additional setup required.
 
 ## Features
 
@@ -20,21 +20,23 @@ lazy-rabbit seeks to either solve these problems, making them easier to deal wit
 
 ### 1. Configuration-Driven Messaging Architecture
 
-Define exchanges, queues, and workers (consumers) through configuration files. This enables scalable and maintainable message infrastructure without hardcoding logic and option settings, making it easy to extend or modify your messaging topology.
+Define exchanges, queues, and workers (consumers) using a simple, predefined configuration schema. This structured approach eliminates the need for hardcoded setup logic and option settings, making your messaging topology easy to modify and maintain.
+
+Its the best practice to centralize the configurations. By centralizing these definitions in one place, you can avoid scattering hardcoded setup logic and option settings throughout your codebase. Whether you manage configurations via the config library, JSON files, or arrays, the choice is yours.
 
 ### 2. Automated Exchange/Queue Declaration & Binding
 
-Exchanges and queues are automatically asserted (create anonymous if missing) and bound as needed when publishing or consuming messages. This reduces boilerplate and ensures your messaging topology is always up-to-date.
+When publishing or consuming messages, exchanges and queues are automatically declared (creates anonymous ones if not specified) and bound according to the configuration. You don’t need to manually call assertExchange, assertQueue, or bindQueue - just use the built-in publish or subscribe methods, and the system will handle the rest. This reduces boilerplate and keeps your messaging topology consistent and always up-to-date.
 
-### 3. **Configurable and Reusable Worker Base Class**
+### 3. Build Message Consumers by Extending the Base Worker
 
-A reusable Worker base class is provided, allowing you to register routing key–based handlers. With simple configuration for queues, exchanges, and bindings, you can quickly build message consumers.
+The base Worker class provides a structured foundation for creating message consumers. By extending it, you can easily define the exchange, queue to listen to specific messages. Routing key-based handler registration is supported, allowing a single worker to dynamically process multiple tasks. Simply inherit, configure and register handlers - no boilerplate required.
 
 ### 4. Dynamic Handler Registration & RoutingKey-Based Dispatch
 
-Workers can register multiple handlers for different routing keys. Incoming messages are dynamically dispatched to the appropriate handler based on their routing key, supporting flexible and modular message processing.
+For heavy-weight tasks, it’s often best to assign a dedicated Worker with a single callback to ensure isolation and performance. However, this approach can become inefficient for lightweight tasks. To address this, the Worker class includes a built-in dispatch mechanism that dynamically routes messages to the appropriate handler based on their routing key—allowing a single Worker to flexibly manage multiple lightweight operations without unnecessary duplication.
 
-If a message arrives for an unregistered routing key, a notfound event is emitted. Handler errors are also surfaced via events, making it easy to log and monitor unexpected issues.
+In this structure, you can scale-out easily when workload increases beyond what a single Worker can handle.
 
 ### 4. Built-in RPC Pattern Support
 
@@ -44,21 +46,57 @@ Seamlessly implement RPC communication patterns with built-in methods for reques
 
 Connections and channels are managed internally, with automatic creation and reuse. Each worker can operate on its own channel, supporting isolation and concurrency.
 
-### 5. Event-Driven Status & Error Reporting
-
-The broker emits events for key lifecycle moments—such as connection success, errors, timeouts, and disconnects—enabling robust monitoring and custom error handling via Node.js’s EventEmitter.
-
-### 7. Graceful Shutdown for Workers & Broker
-
-Both workers and the broker provide methods for cleanly shutting down channels and connections, supporting safe application restarts and deployments.
-
 ## Configuration Schemas
 
 ### 1. Exchange Configuration Schema
 
+```javascript
+NOTIFICATION_EXCHANGE: {
+    name: 'avocado.notification.exchange',
+    type: 'topic',
+    options: {
+        durable: false,
+        autoDelete: true,
+        internal: false
+    }
+}
+```
+
+- name: Name of the exchange
+- type: Exchange type — supports 'direct', 'topic', 'fanout', or 'headers'
+- options: Additional settings such as durable, autoDelete, etc
+
 ### 2. Queue Schema
 
+```javascript
+NOTIFY_SMS_QUEUE: {
+    name: 'notify.sms.queue',
+    options: {
+        durable: false,
+        messageTtl: 10000
+    }
+}
+```
+
+- name: Name of the queue
+- options: Queue-specific settings such as durable, messageTtl, deadLetterExchange, etc
+
 ### 3. Worker Schema
+
+```javascript
+EMAIL_NOTIFICATION_WORKER: {
+    name: 'email-notification',
+    exchangeDefinition: ExchangeDefinitions.NOTIFICATION_EXCHANGE,
+    queueDefinition: QueueDefinitions.NOTIFY_EMAIL_QUEUE,
+    bindingKey: 'notify.email.#'
+}
+```
+
+The specified queue is bound to the given exchange using the provided bindingKey pattern for routing incoming messages.
+
+- exchangeDefinition: Exchange schema worker listens to
+- queueDefinition: Queue schema this worker consumes from. if left blank, anonymous queue is used automatically.
+- bindingKey: The routing key pattern used for message filtering
 
 ## Roadmap
 
@@ -66,3 +104,4 @@ Both workers and the broker provide methods for cleanly shutting down channels a
 - Support delayed message queues
 - Add retry mechanism for message consumption
 - Error Handling
+- Support multi-channel usage per Worker based on purpose (currently, each Worker is limited to a single channel)
