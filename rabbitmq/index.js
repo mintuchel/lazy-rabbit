@@ -110,6 +110,11 @@ class MessageBroker extends EventEmitter {
             return await channel.assertQueue("", { exclusive: true });
         }
 
+        const { durable, exclusive } = queueDefinition.options || {};
+        if (durable === true && exclusive === true) {
+            system.warning('[MESSAGE-BROKER] assertQueue: durable=true + exclusive=true may conflict in most use cases.');
+        }
+
         const { name, options } = queueDefinition;
         return await channel.assertQueue(name, options);
     }
