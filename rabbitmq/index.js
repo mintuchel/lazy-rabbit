@@ -248,7 +248,7 @@ class MessageBroker extends EventEmitter {
         try {
             await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, exchangeDefinition.options);
             channel.publish(exchangeDefinition.name, routingKey, Buffer.from(JSON.stringify(payload)), messageProperties);
-            system.info("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchangeDefinition.name, routingKey, JSON.stringify(payload));
+            //system.info("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchangeDefinition.name, routingKey, JSON.stringify(payload));
         } catch (err) {
             system.error("[MESSAGE-BROKER] PUBLISH TO EXCHANGE: ", err.message);
             this.emit('error', err);

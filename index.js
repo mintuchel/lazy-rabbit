@@ -13,8 +13,8 @@ class Application {
     this.channel = null;
     this.authService = new AuthService();
     this.smsWorker = new SMSWorker();
-    // this.emailWorker = new EmailWorker();
-    // this.slackWorker = new SlackWorker();
+    this.emailWorker = new EmailWorker();
+    this.slackWorker = new SlackWorker();
   }
 
   async start() {
@@ -48,8 +48,8 @@ class Application {
 
       self.authService.run();
       self.smsWorker.run();
-      // this.emailWorker.run();
-      // this.slackWorker.run();
+      self.emailWorker.run();
+      self.slackWorker.run();
       system.debug("Application started successfully");
     } catch (error) {
       system.error("Error starting application:", error);
@@ -66,11 +66,24 @@ class Application {
         QueueDefinitions.AUTH_REPLY_QUEUE,
         'auth.login',
         {
-          username: 'user123',
-          password: 'securePassword!'
+          username: 'lazy_rabbit',
+          password: 'iwantcoconut!'
         }
       );
-    }, env.HEARTBEAT_INTERVAL_MS);
+
+      // messageBroker.publishRpcMessage(
+      //   self.channel,
+      //   ExchangeDefinitions.AUTH_EXCHANGE,
+      //   QueueDefinitions.AUTH_REPLY_QUEUE,
+      //   'auth.signup',
+      //   {
+      //     username: 'lazy_rabbit',
+      //     password: 'iwantcoconut!',
+      //     sex: 'male',
+      //     age: '26'
+      //   }
+      // );
+    }, 2000);
   }
 
   async shutdown() {
