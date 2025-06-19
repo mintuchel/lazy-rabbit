@@ -135,7 +135,7 @@ class MessageBroker extends EventEmitter {
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
     * @param {Object} queueDefintiion - Queue configuration used for replyTo Queue.
     * @param {string} routingKey - Routing key used for message delivery.
-    * @param {Object} payload - Message body in JSON format.
+    * @param {Object} payload - Message content in JSON format.
     */
     async publishRpcMessage(channel, exchangeDefinition, queueDefinition, routingKey, payload) {
         try {
@@ -154,6 +154,7 @@ class MessageBroker extends EventEmitter {
                 channel.consume(replyQueue, (msg) => {
                     // 내가 보낸 메시지에 대한 응답이 맞다면
                     if (msg.properties.correlationId === correlationId) {
+                        // response msg의 content도 JSON 형식으로 옴
                         const response = JSON.parse(msg.content.toString());
                         resolve(response);
                         channel.cancel(consumerTag);
@@ -240,7 +241,7 @@ class MessageBroker extends EventEmitter {
     * @param {amqplib.Channel} channel - amqp channel used for publishing.
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
     * @param {string} routingKey - Routing key used for message delivery.
-    * @param {Object} payload - Message body in JSON format.
+    * @param {Object} payload - Message content in JSON format.
     * @param {Object} [properties={}] - Optional message properties (e.g. for RPC: replyTo, correlationId).
     */
     async publishToExchange(channel, exchangeDefinition, routingKey, payload, messageProperties = {}) {

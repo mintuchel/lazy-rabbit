@@ -16,7 +16,7 @@ const ExchangeDefinitions = {
         options: {
             durable: false,
             autoDelete: true,
-            internal: true
+            internal: false
         }
     }
 };
