@@ -3,13 +3,14 @@ const { env } = require('../config');
 const WorkerDefinitions = require("../rabbitmq/config/worker");
 const Worker = require("../rabbitmq/worker");
 const system = require("../system");
-const { onWarn, onError } = require("./handler");
+const handlers = require("./handler");
 
 class Logger extends Worker {
     constructor() {
         super(WorkerDefinitions.LOGGER);
-        this.registerHandler("logger.warn", onWarn);
-        this.registerHandler("logger.error", onError);
+        for(const [key, value] of handlers) {
+            this.registerHandler(key, value);
+        }
     }
 
     async run() {

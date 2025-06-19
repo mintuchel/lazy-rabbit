@@ -2,12 +2,14 @@
 
 const system = require("../system");
 
-async function onWarn(msg) {
+const map = new Map();
+
+map.set('logger.warn', async (msg) => {
     system.warning("[RECIEVED] Logger :", msg);
-}
+});
 
-async function onError(msg) {
-    system.error("[RECIEVED] Logger :", msg);
-}
+map.set('logger.error', async (msg) => {
+    system.error("[RECIEVED] Logger :")
+});
 
-module.exports = { onWarn, onError };
+module.exports = map;
