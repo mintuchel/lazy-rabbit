@@ -1,25 +1,20 @@
-const RpcWorker = require("./rpc-worker");
-const AppServer = require("./app-server/server");
 const { env } = require('./config');
-const WorkerA = require("./direct-worker/workerA");
-const WorkerB = require("./direct-worker/workerB");
+const AuthService = require("./auth");
 const SMSWorker = require("./notification/sms-worker");
 const EmailWorker = require("./notification/email-worker");
 const SlackWorker = require("./notification/slack-worker");
 const system = require("./system");
 const messageBroker = require("./rabbitmq");
-const Logger = require("./logger");
+const ExchangeDefinitions = require('./rabbitmq/config/exchange');
+const QueueDefinitions = require('./rabbitmq/config/queue');
 
 class Application {
   constructor() {
-    this.appServer = new AppServer();
-    this.rpcWorker = new RpcWorker();
-    this.workerA = new WorkerA();
-    this.workerB = new WorkerB();
-    this.smsWorker = new SMSWorker();
-    this.emailWorker = new EmailWorker();
-    this.slackWorker = new SlackWorker();
-    this.logger = new Logger();
+    this.channel = null;
+    this.authService = new AuthService();
+    // this.smsWorker = new SMSWorker();
+    // this.emailWorker = new EmailWorker();
+    // this.slackWorker = new SlackWorker();
   }
 
   async start() {
@@ -50,34 +45,34 @@ class Application {
       // 그 이후부터는 비동기적으로 진행
       await messageBroker.run();
 
-      this.appServer.run();
-      this.rpcWorker.run();
-      this.workerA.run();
-      this.workerB.run();
-      this.smsWorker.run();
-      this.emailWorker.run();
-      this.slackWorker.run();
-      this.logger.run();
+      self.authService.run();
+      // this.smsWorker.run();
+      // this.emailWorker.run();
+      // this.slackWorker.run();
       system.debug("Application started successfully");
     } catch (error) {
       system.error("Error starting application:", error);
-      await this.shutdown();
+      await self.shutdown();
       throw error;
     }
+
+    this.channel = await messageBroker.createChannel();
+
+    setInterval(() => {
+      messageBroker.publishRpcMessage(this.channel, ExchangeDefinitions.AUTH_EXCHANGE, QueueDefinitions.AUTH_REPLY_QUEUE, 'auth.login', '');
+    }, env.HEARTBEAT_INTERVAL_MS);
   }
 
   async shutdown() {
     system.debug("Shutting down gracefully...");
+
+    const self = this;
     try {
       // 역순으로 서비스 종료하기
-      if (this.logger) await this.logger.shutdown();
       if (this.smsWorker) await this.smsWorker.shutdown();
       if (this.emailWorker) await this.emailWorker.shutdown();
       if (this.slackWorker) await this.slackWorker.shutdown();
-      if (this.workerB) await this.workerB.shutdown();
-      if (this.workerA) await this.workerA.shutdown();
-      if (this.rpcWorker) await this.rpcWorker.shutdown();
-      if (this.appServer) await this.appServer.shutdown();
+      if (this.authService) await this.authService.shutdown();
       if (messageBroker) messageBroker.shutdown();
 
       await new Promise(resolve => setTimeout(resolve, 1000));
