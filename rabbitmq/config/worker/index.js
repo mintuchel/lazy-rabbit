@@ -2,23 +2,11 @@ const ExchangeDefinitions = require("../exchange");
 const QueueDefinitions = require("../queue");
 
 const WorkerDefinitions = {
-    LOGGER: {
-        name: 'Logger',
-        exchangeDefinition: ExchangeDefinitions.LOGGER_EXCHANGE,
-        queueDefinition: '',
-        bindingKey: 'logger.#'
-    },
-    WORKER_A: {
-        name: 'Worker A',
-        exchangeDefinition: ExchangeDefinitions.DIRECT_EXCHANGE,
-        queueDefinition: '',
-        bindingKey: 'A'
-    },
-    WORKER_B: {
-        name: 'Worker B',
-        exchangeDefinition: ExchangeDefinitions.DIRECT_EXCHANGE,
-        queueDefinition: '',
-        bindingKey: 'B'
+    AUTH_SERVICE: {
+        name: 'AuthService',
+        exchangeDefinition: ExchangeDefinitions.AUTH_EXCHANGE,
+        queueDefinition: QueueDefinitions.AUTH_REQUEST_QUEUE,
+        bindingKey: 'auth.#'
     },
     SMS_WORKER: {
         name: 'sms-notification',
@@ -37,12 +25,6 @@ const WorkerDefinitions = {
         exchangeDefinition: ExchangeDefinitions.NOTIFICATION_EXCHANGE,
         queueDefinition: QueueDefinitions.NOTIFY_SLACK_QUEUE,
         bindingKey: 'notify.slack.#'
-    },
-    RPC_WORKER: {
-        name: 'RPC-Worker',
-        exchangeDefinition: ExchangeDefinitions.RPC_EXCHANGE,
-        queueDefinition: '',
-        bindingKey: 'avocado.rpc'
     }
 };
 

@@ -1,6 +1,13 @@
 const QueueDefinitions = {
-    RPC_REPLY_QUEUE: {
-        name: 'rpc.reply.queue',
+    AUTH_REQUEST_QUEUE: {
+        name: 'auth.request.queue',
+        options: {
+            durable: false,
+            messageTtl: 5000
+        }
+    },
+    AUTH_REPLY_QUEUE: {
+        name: 'auth.reply.queue',
         options: {
             durable: false,
             messageTtl: 5000
