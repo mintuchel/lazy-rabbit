@@ -59,6 +59,11 @@ class Worker extends EventEmitter {
         this.#handlerMap.set(routingKey, callback);
     }
 
+    // 다른 파일에 handlerMap 을 정의하고 함수로 바로 세팅가능
+    registerHandlerMap(handlerMap) {
+        this.#handlerMap = handlerMap;
+    }
+
     /**
      * Dispatches an incoming message to the appropriate handler based on message's routingKey.
      * 

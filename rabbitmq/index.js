@@ -133,17 +133,17 @@ class MessageBroker extends EventEmitter {
     * @async
     * @param {amqplib.Channel} channel - amqp channel used for publishing.
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
-    * @param {Object} queueDefintiion - Queue configuration used for replyTo Queue.
+    * @param {Object} replyQueueDefintiion - Queue configuration used for replyTo Queue.
     * @param {string} routingKey - Routing key used for message delivery.
     * @param {Object} payload - Message content in JSON format.
     */
-    async publishRpcMessage(channel, exchangeDefinition, queueDefinition, routingKey, payload) {
+    async publishRpcMessage(channel, exchangeDefinition, replyQueueDefinition, routingKey, payload) {
         try {
             const correlationId = uuidv4();
 
             // queueDefinition을 바탕으로 응답받을 큐 선언
             // 구조분해할당으로 queue 값을 replyQueue로 사용
-            const { queue: replyQueue } = await this.#assertQueue(channel, queueDefinition);
+            const { queue: replyQueue } = await this.#assertQueue(channel, replyQueueDefinition);
 
             const consumerTag = uuidv4();
 
