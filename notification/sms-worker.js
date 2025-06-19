@@ -10,7 +10,8 @@ class SMSWorker extends Worker {
     }
 
     onDispatch(channel, msg) {
-        system.info("[RECIEVED] Worker (SMS): ", msg.content.toString());
+        const payload = JSON.parse(msg.content.toString());
+        system.info("[RECIEVED] Worker (SMS): ", payload);
     }
 
     async run() {

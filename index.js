@@ -12,7 +12,7 @@ class Application {
   constructor() {
     this.channel = null;
     this.authService = new AuthService();
-    // this.smsWorker = new SMSWorker();
+    this.smsWorker = new SMSWorker();
     // this.emailWorker = new EmailWorker();
     // this.slackWorker = new SlackWorker();
   }
@@ -20,6 +20,7 @@ class Application {
   async start() {
     system.debug('Starting application...');
 
+    // 콜백이나 내부 함수에서 외부 this를 안전하게 참조하기 위한 우회 방식
     const self = this;
 
     // HANG-UP
@@ -46,7 +47,7 @@ class Application {
       await messageBroker.run();
 
       self.authService.run();
-      // this.smsWorker.run();
+      self.smsWorker.run();
       // this.emailWorker.run();
       // this.slackWorker.run();
       system.debug("Application started successfully");
@@ -56,17 +57,25 @@ class Application {
       throw error;
     }
 
-    this.channel = await messageBroker.createChannel();
+    self.channel = await messageBroker.createChannel();
 
     setInterval(() => {
-      messageBroker.publishRpcMessage(this.channel, ExchangeDefinitions.AUTH_EXCHANGE, QueueDefinitions.AUTH_REPLY_QUEUE, 'auth.login', '');
+      messageBroker.publishRpcMessage(
+        self.channel,
+        ExchangeDefinitions.AUTH_EXCHANGE,
+        QueueDefinitions.AUTH_REPLY_QUEUE,
+        'auth.login',
+        {
+          username: 'user123',
+          password: 'securePassword!'
+        }
+      );
     }, env.HEARTBEAT_INTERVAL_MS);
   }
 
   async shutdown() {
     system.debug("Shutting down gracefully...");
 
-    const self = this;
     try {
       // 역순으로 서비스 종료하기
       if (this.smsWorker) await this.smsWorker.shutdown();
@@ -88,7 +97,6 @@ class Application {
 
 const app = new Application();
 app.start().catch(error => {
-
   system.error("Fatal error:", error);
   process.exit(1);
 });

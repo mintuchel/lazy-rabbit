@@ -7,10 +7,11 @@ const ExchangeDefinitions = require("../rabbitmq/config/exchange");
 const map = new Map();
 
 map.set('auth.login', async (channel, msg) => {
-    console.log(msg);
     const payload = JSON.parse(msg.content.toString());
     system.info("[RECIEVED] AuthService (Login): ", payload);
     
+    messageBroker.publishToExchange(channel, ExchangeDefinitions.NOTIFICATION_EXCHANGE, "notify.sms.login", payload);
+
     return {
         success: true,
         message: "Login Success!"
