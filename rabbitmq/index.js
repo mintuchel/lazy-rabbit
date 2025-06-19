@@ -107,7 +107,7 @@ class MessageBroker extends EventEmitter {
     async #assertQueue(channel, queueDefinition) {
         // 없다면 익명큐 선언
         if (queueDefinition === "") {
-            return await channel.assertQueue("", { exclusive: true });
+            return await channel.assertQueue("", { exclusive: true, autoDelete: true });
         }
 
         const { durable, exclusive } = queueDefinition.options || {};
@@ -116,6 +116,12 @@ class MessageBroker extends EventEmitter {
         }
 
         const { name, options } = queueDefinition;
+
+        if (queueDefinition.options?.arguments?.['x-dead-letter-exchange']) {
+            const dlxName = queueDefinition.options.arguments['x-dead-letter-exchange'];
+            await channel.assertExchange(dlxName, 'topic', { durable: true }); // type은 config에서 추론하거나 고정
+        }
+
         return await channel.assertQueue(name, options);
     }
 
@@ -127,6 +133,7 @@ class MessageBroker extends EventEmitter {
     * @async
     * @param {amqplib.Channel} channel - amqp channel used for publishing.
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
+    * @param {Object} queueDefintiion - Queue configuration used for replyTo Queue.
     * @param {string} routingKey - Routing key used for message delivery.
     * @param {Object} payload - Message body in JSON format.
     */
@@ -176,18 +183,18 @@ class MessageBroker extends EventEmitter {
 
     /**
     * Subscribes to messages from a specific exchange using the RPC pattern, and sends a response.
-    * The onSubscribe callback must return a value which will be sent back as the RPC response.
+    * The onDispatch callback routes messages to appropriate handlers based on routingKey.
     *
     * @async
     * @param {amqplib.Channel} channel - The amqp channel used to set up the subscription.
     * @param {Object} exchangeDefinition - ExchangeDefinition config object.
     * @param {Object} queueDefinition - QueueDefinition config object.
     * @param {string} bindingKey - The bindingKey used for binding queue of Queuedefinition to exchange.
-    * @param {function} onSubscribe - Callback function executed when a message is received.
+    * @param {function} onDispatch - Worker.dispatch function that routes messages by routingKey to registered handlers.
     * 
-    * It should return the response to be sent back to the RPC message publisher.
+    * @returns {Promise<any>} Response from the handler function selected by onDispatch to be sent back as RPC response.
     */
-    async subscribeRpcMessage(channel, exchangeDefinition, queueDefinition, bindingKey, onSubscribe) {
+    async subscribeRpcMessage(channel, exchangeDefinition, queueDefinition, bindingKey, onDispatch) {
 
         try {
             // 내가 binding할 Exchange 존재하는지 확인
@@ -203,8 +210,8 @@ class MessageBroker extends EventEmitter {
             channel.consume(declaredQueue, async (msg) => {
                 if (!msg) return;
 
-                const payload = JSON.parse(msg.content.toString());
-                const response = await onSubscribe(payload); // payload에 대한 처리 진행
+                // msg 객체 그대로 onDispatch 함수에게 전달
+                const response = await onDispatch(msg);
 
                 // RPC니까 응답 다시 전송해주기
                 try {
@@ -254,11 +261,12 @@ class MessageBroker extends EventEmitter {
     * @async
     * @param {amqplib.Channel} channel - The amqp channel used for exchange and queue operations.
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
-    * @param {Object} queueDefinition - QueueDefinition config object. 
+    * @param {Object} queueDefinition - QueueDefinition config object.
+    * @param {Object} deadLetterExchangeDefinition - DeadLetterExchange config object.
     * @param {string} bindingKey - Binding key used for binding anonymous_q to exchange.
-    * @param {function} onSubscribe - Callback function executed when a message is received.
-    */
-    async subscribeToExchange(channel, exchangeDefinition, queueDefinition, bindingKey, onSubscribe) {
+    * @param {function} onDispatch - Worker.dispatch function that routes messages by routingKey to registered handlers.
+     */
+    async subscribeToExchange(channel, exchangeDefinition, queueDefinition, bindingKey, onDispatch) {
         try {
             await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, exchangeDefinition.options);
 
@@ -268,7 +276,7 @@ class MessageBroker extends EventEmitter {
 
             channel.consume(declaredQueue, function (msg) {
                 if (msg.content) {
-                    onSubscribe(msg);
+                    onDispatch(msg);
                 }
                 channel.ack(msg);
             }, {
