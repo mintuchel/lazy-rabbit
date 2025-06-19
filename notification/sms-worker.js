@@ -9,7 +9,7 @@ class SMSWorker extends Worker {
         super(WorkerDefinitions.SMS_WORKER);
     }
 
-    onSubscribe(msg) {
+    onDispatch(channel, msg) {
         system.info("[RECIEVED] Worker (SMS): ", msg.content.toString());
     }
 
@@ -18,7 +18,7 @@ class SMSWorker extends Worker {
             await this.init();
         }
 
-        messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.onSubscribe);
+        messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.onDispatch);
 
         system.debug("NotificationWorker(SMS) start");
         setInterval(() => {

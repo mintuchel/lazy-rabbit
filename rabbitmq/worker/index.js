@@ -64,17 +64,17 @@ class Worker extends EventEmitter {
      * 
      * This allows each worker to handle multiple messages dynamically depending on the routingKey.
      * @async
+     * @param channel - amqp channel used by the worker
      * @param {amqplib.Message} msg - Pure amqp message produced by producer
      */
-    async dispatch(msg) {
+    async dispatch(channel, msg) {
         if (!msg || !msg.fields) {
             this.emit('error', new Error('Invalid message format: missing fields'));
             return;
         }
 
         const routingKey = msg.fields.routingKey;
-        const payload = JSON.parse(msg.content.toString());
-
+        
         if (!this.#handlerMap.has(routingKey)) {
             this.emit('notfound', routingKey);
         }
@@ -82,7 +82,7 @@ class Worker extends EventEmitter {
         const handler = this.#handlerMap.get(routingKey);
 
         try {
-            const result = await handler(payload);
+            const result = await handler(channel, msg);
             return result;
         } catch (err) {
             this.emit('error', err);

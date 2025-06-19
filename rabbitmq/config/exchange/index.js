@@ -9,6 +9,15 @@ const ExchangeDefinitions = {
             autoDelete: true,
             internal: false
         }
+    },
+    NOTIFICATION_EXCHANGE: {
+        name: 'notification.exchange',
+        type: ExchangeType.TOPIC,
+        options: {
+            durable: false,
+            autoDelete: true,
+            internal: true
+        }
     }
 };
 

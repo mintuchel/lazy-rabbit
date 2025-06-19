@@ -190,7 +190,7 @@ class MessageBroker extends EventEmitter {
     * @param {Object} exchangeDefinition - ExchangeDefinition config object.
     * @param {Object} queueDefinition - QueueDefinition config object.
     * @param {string} bindingKey - The bindingKey used for binding queue of Queuedefinition to exchange.
-    * @param {function} onDispatch - Worker.dispatch function that routes messages by routingKey to registered handlers.
+    * @param {function} onDispatch - dispatch function that routes messages by routingKey to registered handlers.
     * 
     * @returns {Promise<any>} Response from the handler function selected by onDispatch to be sent back as RPC response.
     */
@@ -211,7 +211,7 @@ class MessageBroker extends EventEmitter {
                 if (!msg) return;
 
                 // msg 객체 그대로 onDispatch 함수에게 전달
-                const response = await onDispatch(msg);
+                const response = await onDispatch(channel, msg);
 
                 // RPC니까 응답 다시 전송해주기
                 try {
@@ -264,8 +264,8 @@ class MessageBroker extends EventEmitter {
     * @param {Object} queueDefinition - QueueDefinition config object.
     * @param {Object} deadLetterExchangeDefinition - DeadLetterExchange config object.
     * @param {string} bindingKey - Binding key used for binding anonymous_q to exchange.
-    * @param {function} onDispatch - Worker.dispatch function that routes messages by routingKey to registered handlers.
-     */
+    * @param {function} onDispatch - dispatch function that routes messages by routingKey to registered handlers.
+    */
     async subscribeToExchange(channel, exchangeDefinition, queueDefinition, bindingKey, onDispatch) {
         try {
             await channel.assertExchange(exchangeDefinition.name, exchangeDefinition.type, exchangeDefinition.options);
@@ -276,7 +276,7 @@ class MessageBroker extends EventEmitter {
 
             channel.consume(declaredQueue, function (msg) {
                 if (msg.content) {
-                    onDispatch(msg);
+                    onDispatch(channel, msg);
                 }
                 channel.ack(msg);
             }, {
