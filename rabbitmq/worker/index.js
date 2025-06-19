@@ -32,7 +32,7 @@ class Worker extends EventEmitter {
         this.exchangeDefinition = config.exchangeDefinition;
         this.queueDefinition = config.queueDefinition;
         this.bindingKey = config.bindingKey;
-    
+
         this.on('notfound', (routingKey) => {
             system.info('[MessageDispatcher] Cannot find handler matched with', routingKey);
         });
@@ -67,6 +67,11 @@ class Worker extends EventEmitter {
      * @param {amqplib.Message} msg - Pure amqp message produced by producer
      */
     async dispatch(msg) {
+        if (!msg || !msg.fields) {
+            this.emit('error', new Error('Invalid message format: missing fields'));
+            return;
+        }
+
         const routingKey = msg.fields.routingKey;
         const payload = JSON.parse(msg.content.toString());
 
