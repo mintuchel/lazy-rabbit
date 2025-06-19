@@ -4,7 +4,7 @@
   <img src="https://github.com/user-attachments/assets/d010b754-a3fb-4fb0-906e-8dd1adfee401" width="200" />
 </p>
 
-A lightweight wrapper around [amqplib](https://www.npmjs.com/package/amqplib) for [RabbitMQ](https://www.rabbitmq.com/docs) that simplifies configuration and message workflows for publishing and consuming - _allowing you to be lazy_
+A lightweight wrapper around [amqplib](https://www.npmjs.com/package/amqplib) that simplifies [RabbitMQ](https://www.rabbitmq.com/docs) architecture setup, enabling producer-consumer oriented development and letting you focus on your business logic - _allowing you to be lazy_
 
 ## Introduction
 
@@ -22,27 +22,31 @@ lazy-rabbit seeks to either solve these problems, making them easier to deal wit
 
 Define exchanges, queues, and workers (consumers) using a simple, predefined [configuration schemas](#configuration-schemas). This structured approach eliminates the need for hardcoded setup logic and option settings, making your messaging topology easy to modify and maintain.
 
-Its the best practice to centralize the configurations. By centralizing these definitions in one place, you can avoid scattering hardcoded setup logic and option settings throughout your codebase. Whether you manage configurations via the config library, JSON files, or arrays, the choice is yours.
+### 2. Enables Producer-Consumer Oriented Development
 
-### 2. Automated Exchange/Queue Declaration & Binding
+It’s a best practice to centralize your message broker architecture configuration. By defining exchanges, queues, and routing logic in one place, you can avoid scattering hardcoded setup logic and amqp options across your codebase.
+
+This design allows you to focus purely on **producer** and **consumer** logic — without worrying about the low-level plumbing. Whether you manage configurations via a config library, JSON files, or simple objects, the choice is yours.
+
+### 3. Automated Exchange/Queue Declaration & Binding
 
 When publishing or consuming messages, exchanges and queues are automatically declared (creates anonymous ones if not specified) and bound according to the configuration. You don’t need to manually call assertExchange, assertQueue, or bindQueue - just use the built-in publish or subscribe methods, and the system will handle the rest. This reduces boilerplate and keeps your messaging topology consistent and always up-to-date.
 
-### 3. Build Message Consumers by Extending the Base Worker
+### 4. Build Message Consumers by Extending the Base Worker
 
 The base Worker class provides a structured foundation for creating message consumers. By extending it, you can easily define the exchange, queue to listen to specific messages. Routing key-based handler registration is supported, allowing a single worker to dynamically process multiple tasks. Simply inherit, configure and register handlers - no boilerplate required.
 
-### 4. Dynamic Handler Registration & RoutingKey-Based Dispatch
+### 5. Dynamic Handler Registration & RoutingKey-Based Dispatch
 
 For heavy-weight tasks, it’s often best to assign a dedicated Worker with a single callback to ensure isolation and performance. However, this approach can become inefficient for lightweight tasks. To address this, the Worker class includes a built-in dispatch mechanism that dynamically routes messages to the appropriate handler based on their routing key—allowing a single Worker to flexibly manage multiple lightweight operations without unnecessary duplication.
 
 In this structure, you can scale-out easily when workload increases beyond what a single Worker can handle.
 
-### 4. Built-in RPC Pattern Support
+### 6. Built-in RPC Pattern Support
 
 Seamlessly implement RPC communication patterns with built-in methods for request/reply messaging. Features include temporary reply queues, correlation IDs, timeouts, and automatic response handling.
 
-### 5. Connection & Channel Management
+### 7. Connection & Channel Management
 
 Connections and channels are managed internally, with automatic creation and reuse. Each worker can operate on its own channel, supporting isolation and concurrency.
 
@@ -106,6 +110,27 @@ The specified queue is bound to the given exchange using the provided bindingKey
 
 1. Currently, all messages are assumed to be in **JSON** format.
 2. The dispatch method passes the raw `amqplib.Message` to your handler. **lazy-rabbit does not automatically unwrap the message content.** It's your job to parse msg.content as needed.
+
+## Getting Started with Demo App
+
+A minimal demo app is included under the `demo/` directory.
+
+It demonstrates how to use the library with key features such as:
+
+- Direct message publishing
+- RPC messaging
+- Dynamic handler registration in worker consumers
+- Dead-letter exchange (DLX) configuration
+
+```bash
+cd demo
+npm install
+npm start
+```
+
+The diagram below illustrates the current message broker architecture used in demo app, focused on message delivery and communication flow.
+
+This example omits actual authentication and notification handling or full signup CRUD logic. The focus is solely on inter-service messaging.
 
 ## Roadmap
 
