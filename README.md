@@ -20,7 +20,7 @@ lazy-rabbit seeks to either solve these problems, making them easier to deal wit
 
 ### 1. Configuration-Driven Messaging Architecture
 
-Define exchanges, queues, and workers (consumers) using a simple, predefined configuration schema. This structured approach eliminates the need for hardcoded setup logic and option settings, making your messaging topology easy to modify and maintain.
+Define exchanges, queues, and workers (consumers) using a simple, predefined [configuration schemas](#configuration-schemas). This structured approach eliminates the need for hardcoded setup logic and option settings, making your messaging topology easy to modify and maintain.
 
 Its the best practice to centralize the configurations. By centralizing these definitions in one place, you can avoid scattering hardcoded setup logic and option settings throughout your codebase. Whether you manage configurations via the config library, JSON files, or arrays, the choice is yours.
 
@@ -73,7 +73,11 @@ NOTIFY_SMS_QUEUE: {
     name: 'notify.sms.queue',
     options: {
         durable: false,
-        messageTtl: 10000
+        arguments: {
+            'x-message-ttl': 30000,
+            'x-dead-letter-exchange': 'dlx.exchange',
+            'x-dead-letter-routing-key': 'dlx.email',
+        }
     }
 }
 ```
@@ -98,10 +102,15 @@ The specified queue is bound to the given exchange using the provided bindingKey
 - queueDefinition: Queue schema this worker consumes from. if left blank, anonymous queue is used automatically.
 - bindingKey: The routing key pattern used for message filtering
 
+## Caveats
+
+1. Currently, all messages are assumed to be in **JSON** format.
+2. The dispatch method passes the raw `amqplib.Message` to your handler. **lazy-rabbit does not automatically unwrap the message content.** It's your job to parse msg.content as needed.
+
 ## Roadmap
 
-- Improve TypeScript support
-- Support delayed message queues
+- Migrate codebase to TypeScript
+- Support x-dead-letter-exchange advanced option when publishing to exchange
 - Add retry mechanism for message consumption
 - Error Handling
 - Support multi-channel usage per Worker based on purpose (currently, each Worker is limited to a single channel)
