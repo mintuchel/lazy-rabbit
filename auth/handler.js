@@ -9,7 +9,7 @@ const map = new Map();
 function getRandomRoutingKey(correlationId, type) {
     const targets = ["notify.sms", "notify.slack", "notify.email"];
     const index = [...correlationId].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % targets.length;
-    return `${targets[index]}.${type}`;
+    return targets[index] + '.' + type;
 }
 
 map.set('auth.login', async (channel, msg) => {
@@ -19,6 +19,7 @@ map.set('auth.login', async (channel, msg) => {
     // correlationId로 랜덤한 notification worker로 전송하기 위해 routingKey 만들기
     const correlationId = msg.properties.correlationId;
     const routingKey = getRandomRoutingKey(correlationId, 'login');
+
     messageBroker.publishToExchange(channel, ExchangeDefinitions.NOTIFICATION_EXCHANGE, routingKey, payload);
 
     return {
@@ -34,6 +35,7 @@ map.set('auth.signup', async (channel, msg) => {
     // correlationId로 랜덤한 notification worker로 전송하기 위해 routingKey 만들기
     const correlationId = msg.properties.correlationId;
     const routingKey = getRandomRoutingKey(correlationId, 'signup');
+    
     messageBroker.publishToExchange(channel, ExchangeDefinitions.NOTIFICATION_EXCHANGE, routingKey, payload);
 
     return {
