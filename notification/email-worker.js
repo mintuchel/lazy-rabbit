@@ -10,7 +10,20 @@ class EmailWorker extends Worker {
     }
 
     onDispatch(channel, msg) {
-        system.info("[RECIEVED] Worker (Email): ", msg.content.toString());
+        const payload = JSON.parse(msg.content.toString());
+        system.info("[RECIEVED] Worker (Email): ", payload);
+
+        // 0.5 이하이면 ack/nack 하지 않음
+        const random = Math.random();
+        if (random < 0.5) {
+            system.error("[TIMEOUT] Email Worker simulating timeout - no ack/nack:", payload);
+            // ack/nack을 하지 않으면 TTL(3초) 후 deadletter로 이동
+            return;
+        }
+
+        // 정상 처리
+        system.info("[PROCESSED] Email Worker successfully processed:", payload);
+        channel.ack(msg);
     }
 
     async run() {

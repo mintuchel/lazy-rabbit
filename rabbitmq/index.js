@@ -273,11 +273,23 @@ class MessageBroker extends EventEmitter {
 
             await channel.bindQueue(declaredQueue, exchangeDefinition.name, bindingKey);
 
-            channel.consume(declaredQueue, function (msg) {
-                if (msg.content) {
-                    onDispatch(channel, msg);
+            // ack 정상처리는 onDispatch 내부에서만 가능
+            // onDispatch 내부에서 ack/nack을 처리하므로 여기서는 하지 않음
+            channel.consume(declaredQueue, async function (msg) {
+                // amqplib.Message 형식인지 확인
+                if (msg && typeof msg === 'object' && msg.content && msg.fields && msg.properties) {
+                    try {
+                        await onDispatch(channel, msg);
+                    } catch (error) {
+                        system.error("[MESSAGE-BROKER] Error executing onDispatch:", error.message);
+                        // 에러 발생 시 reject (deadletter로 이동)
+                        channel.nack(msg, false, false);
+                    }
+                } else {
+                    // 유효하지 않은 메시지 형식이면 nack하고 deadletter로 이동
+                    system.warning("[MESSAGE-BROKER] Invalid message format received:", msg);
+                    channel.nack(msg, false, false);
                 }
-                channel.ack(msg);
             }, {
                 noAck: false,
             });
