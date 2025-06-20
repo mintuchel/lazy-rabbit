@@ -10,7 +10,9 @@ class DeadLetterWorker extends Worker {
     }
 
     onDispatch(channel, msg) {
-        system.error("[RECIEVED] DEAD-LETTER-WORKER: ", msg.fields.routingKey);
+        const payload = JSON.parse(msg.content.toString());
+        const routingKey = msg.fields.routingKey;
+        system.error("[RECIEVED] DEAD-LETTER-WORKER: ", payload, "routingKey:", routingKey);
     }
 
     async run() {

@@ -50,8 +50,8 @@ class Application {
 
       self.authService.run();
       self.smsWorker.run();
-      //self.emailWorker.run();
-      //self.slackWorker.run();
+      self.emailWorker.run();
+      self.slackWorker.run();
       self.deadLetterWorker.run();
       system.debug("Application started successfully");
     } catch (error) {
