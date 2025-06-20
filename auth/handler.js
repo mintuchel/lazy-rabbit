@@ -7,7 +7,7 @@ const ExchangeDefinitions = require("../rabbitmq/config/exchange");
 const map = new Map();
 
 function getRandomRoutingKey(correlationId, type) {
-    const targets = ["notify.sms", "notify.slack", "notify.email"];
+    const targets = ["notification.sms", "notification.slack", "notification.email"];
     const index = [...correlationId].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % targets.length;
     return targets[index] + '.' + type;
 }

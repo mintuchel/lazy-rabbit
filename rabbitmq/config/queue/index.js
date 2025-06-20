@@ -16,47 +16,47 @@ const QueueDefinitions = {
             exclusive: true
         }
     },
-    NOTIFY_SMS_QUEUE: {
-        name: 'notify.sms.queue',
+    NOTIFICATION_SMS_QUEUE: {
+        name: 'notification.sms.queue',
         options: {
             durable: false,
             autoDelete: true,
             exclusive: true,
             arguments: {
                 'x-message-ttl': 3000,
-                'x-dead-letter-exchange': 'notification.dlx',
-                'x-dead-letter-routing-key': 'notify.dlx.sms'
+                'x-dead-letter-exchange': 'dlx.notification.exchange',
+                'x-dead-letter-routing-key': 'notification.sms.dlq'
             }
         }
     },
-    NOTIFY_EMAIL_QUEUE: {
-        name: 'notify.email.queue',
+    NOTIFICATION_EMAIL_QUEUE: {
+        name: 'notification.email.queue',
         options: {
             durable: false,
             autoDelete: true,
             exclusive: true,
             arguments: {
                 'x-message-ttl': 3000,
-                'x-dead-letter-exchange': 'notification.dlx',
-                'x-dead-letter-routing-key': 'notify.dlx.email'
+                'x-dead-letter-exchange': 'dlx.notification.exchange',
+                'x-dead-letter-routing-key': 'notification.email.dlq'
             }
         }
     },
-    NOTIFY_SLACK_QUEUE: {
-        name: 'notify.slack.queue',
+    NOTIFICATION_SLACK_QUEUE: {
+        name: 'notification.slack.queue',
         options: {
             durable: false,
             autoDelete: true,
             exclusive: true,
             arguments: {
                 'x-message-ttl': 3000,
-                'x-dead-letter-exchange': 'notification.dlx',
-                'x-dead-letter-routing-key': 'notify.dlx.slack'
+                'x-dead-letter-exchange': 'dlx.notification.exchange',
+                'x-dead-letter-routing-key': 'notification.slack.dlq'
             }
         }
     },
-    NOTIFY_DLQ: {
-        name: 'notify.dlq',
+    NOTIFICATION_DLQ: {
+        name: 'notification.queue.dlq',
         options: {
             durable: false,
             autoDelete: true,

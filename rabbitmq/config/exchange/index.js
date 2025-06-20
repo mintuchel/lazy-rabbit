@@ -20,7 +20,7 @@ const ExchangeDefinitions = {
         }
     },
     NOTIFICATION_DLX: {
-        name: 'notification.dlx',
+        name: 'dlx.notification.exchange',
         type: ExchangeType.TOPIC,
         options: {
             durable: false,

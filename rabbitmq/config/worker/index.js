@@ -11,26 +11,26 @@ const WorkerDefinitions = {
     SMS_WORKER: {
         name: 'sms-notification',
         exchangeDefinition: ExchangeDefinitions.NOTIFICATION_EXCHANGE,
-        queueDefinition: QueueDefinitions.NOTIFY_SMS_QUEUE,
-        bindingKey: 'notify.sms.#'
+        queueDefinition: QueueDefinitions.NOTIFICATION_SMS_QUEUE,
+        bindingKey: 'notification.sms.#'
     },
     EMAIL_WORKER: {
         name: 'email-notification',
         exchangeDefinition: ExchangeDefinitions.NOTIFICATION_EXCHANGE,
-        queueDefinition: QueueDefinitions.NOTIFY_EMAIL_QUEUE,
-        bindingKey: 'notify.email.#'
+        queueDefinition: QueueDefinitions.NOTIFICATION_EMAIL_QUEUE,
+        bindingKey: 'notification.email.#'
     },
     SLACK_WORKER: {
         name: 'slack-notification',
         exchangeDefinition: ExchangeDefinitions.NOTIFICATION_EXCHANGE,
-        queueDefinition: QueueDefinitions.NOTIFY_SLACK_QUEUE,
-        bindingKey: 'notify.slack.#'
+        queueDefinition: QueueDefinitions.NOTIFICATION_SLACK_QUEUE,
+        bindingKey: 'notification.slack.#'
     },
     DEAD_LETTER_WORKER: {
         name: 'dead-letter-worker',
         exchangeDefinition: ExchangeDefinitions.NOTIFICATION_DLX,
-        queueDefinition: QueueDefinitions.NOTIFY_DLQ,
-        bindingKey: 'notify.dlx.#'
+        queueDefinition: QueueDefinitions.NOTIFICATION_DLQ,
+        bindingKey: 'notification.#.dlq'
     }
 };
 
