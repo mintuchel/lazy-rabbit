@@ -60,6 +60,10 @@ class Worker extends EventEmitter {
     }
 
     // 다른 파일에 handlerMap 을 정의하고 함수로 바로 세팅가능
+    /**
+     * 
+     * @param {*} handlerMap - handlerMap that is defined in other file
+     */
     registerHandlerMap(handlerMap) {
         this.#handlerMap = handlerMap;
     }

@@ -25,6 +25,12 @@ const WorkerDefinitions = {
         exchangeDefinition: ExchangeDefinitions.NOTIFICATION_EXCHANGE,
         queueDefinition: QueueDefinitions.NOTIFY_SLACK_QUEUE,
         bindingKey: 'notify.slack.#'
+    },
+    DEAD_LETTER_WORKER: {
+        name: 'dead-letter-worker',
+        exchangeDefinition: ExchangeDefinitions.NOTIFICATION_DLX,
+        queueDefinition: QueueDefinitions.NOTIFY_DLQ,
+        bindingKey: 'notify.dlx.#'
     }
 };
 

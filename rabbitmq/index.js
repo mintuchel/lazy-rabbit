@@ -105,24 +105,23 @@ class MessageBroker extends EventEmitter {
      * @returns {Promise<amqplib.Replies.AssertQueue>} The result of the queue declaration, including the queue name and metadata(messageCount, consumerCount).
     */
     async #assertQueue(channel, queueDefinition) {
-        // 없다면 익명큐 선언
-        if (queueDefinition === "") {
-            return await channel.assertQueue("", { exclusive: true, autoDelete: true });
+        try {
+            // if queueDefinition is blank, anonymous queue is defined
+            if (queueDefinition === "") {
+                return await channel.assertQueue("", { exclusive: true, autoDelete: true });
+            }
+
+            const { durable, exclusive } = queueDefinition.options || {};
+            if (durable === true && exclusive === true) {
+                system.warning('[MESSAGE-BROKER] assertQueue: durable=true + exclusive=true may conflict in most use cases.');
+            }
+
+            const { name, options } = queueDefinition;
+            return await channel.assertQueue(name, options);
+        } catch (err) {
+            system.error("[MESSAGE-BROKER] #assertQueue Error: ", err.message);
+            this.emit('error', err);
         }
-
-        const { durable, exclusive } = queueDefinition.options || {};
-        if (durable === true && exclusive === true) {
-            system.warning('[MESSAGE-BROKER] assertQueue: durable=true + exclusive=true may conflict in most use cases.');
-        }
-
-        const { name, options } = queueDefinition;
-
-        if (queueDefinition.options?.arguments?.['x-dead-letter-exchange']) {
-            const dlxName = queueDefinition.options.arguments['x-dead-letter-exchange'];
-            await channel.assertExchange(dlxName, 'topic', { durable: true }); // type은 config에서 추론하거나 고정
-        }
-
-        return await channel.assertQueue(name, options);
     }
 
     /**
@@ -177,7 +176,7 @@ class MessageBroker extends EventEmitter {
                 }, 10000);
             });
         } catch (err) {
-            system.error("[MESSAGE-BROKER] RPC (PUBLISH): ", err.message);
+            system.error("[MESSAGE-BROKER] publishRpcMessage error: ", err.message);
             this.emit('error', err);
         }
     }
@@ -222,13 +221,13 @@ class MessageBroker extends EventEmitter {
                         });
                     }
                 } catch (err) {
-                    system.error("[MESSAGE-BROKER] RPC (SEND-TO-REPLY-QUEUE): ", err.message);
+                    system.error("[MESSAGE-BROKER] subscribeRpcMessage Error(sendToQueue): ", err.message);
                     this.emit('error', err);
                 }
                 channel.ack(msg);
             }, { noAck: false });
         } catch (err) {
-            system.error("[MESSAGE-BROKER] RPC (SUBSCRIBE): ", err.message);
+            system.error("[MESSAGE-BROKER] subscribeRpcMessage Error: ", err.message);
             this.emit('error', err);
         }
     }
@@ -250,7 +249,7 @@ class MessageBroker extends EventEmitter {
             channel.publish(exchangeDefinition.name, routingKey, Buffer.from(JSON.stringify(payload)), messageProperties);
             //system.info("[SENT] destination exchange : %s, routingKey : %s, msg : %s", exchangeDefinition.name, routingKey, JSON.stringify(payload));
         } catch (err) {
-            system.error("[MESSAGE-BROKER] PUBLISH TO EXCHANGE: ", err.message);
+            system.error("[MESSAGE-BROKER] publishToExchange Error: ", err.message);
             this.emit('error', err);
         }
     }
@@ -263,8 +262,7 @@ class MessageBroker extends EventEmitter {
     * @param {amqplib.Channel} channel - The amqp channel used for exchange and queue operations.
     * @param {Object} exchangeDefinition - Exchange configuration (name, type, durable).
     * @param {Object} queueDefinition - QueueDefinition config object.
-    * @param {Object} deadLetterExchangeDefinition - DeadLetterExchange config object.
-    * @param {string} bindingKey - Binding key used for binding anonymous_q to exchange.
+    a* @param {string} bindingKey - Binding key used for binding anonymous_q to exchange.
     * @param {function} onDispatch - dispatch function that routes messages by routingKey to registered handlers.
     */
     async subscribeToExchange(channel, exchangeDefinition, queueDefinition, bindingKey, onDispatch) {
@@ -284,11 +282,19 @@ class MessageBroker extends EventEmitter {
                 noAck: false,
             });
         } catch (err) {
-            system.error("[MESSAGE-BROKER] SUBSCRIBE TO EXCHANGE: ", err.message);
+            system.error("[MESSAGE-BROKER] subscribeToExchange Error: ", err.message);
             this.emit('error', err);
         }
     };
 
+    // DLX는 그냥 publish과정만 없는거라고 생각하면 됨
+    // publish는 어차피 일반 exchange에서 알아서 해주니까 subscribe해줄 worker만 정의해주면 되는거임
+    // DeadLetter 처리하는 subscribe 정의
+    // 그럼 Exchange는 언제 정의?
+    // 얘가 알아서 assertExchange로 해줌!!
+    // deadLetterExchange와 바인딩된 
+
+    // graceful shutdown by waiting to release current connection...
     async shutdown() {
         system.info('[MESSAGE-BROKER] Connection closing...');
         await this.#connection.close();

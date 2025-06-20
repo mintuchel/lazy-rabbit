@@ -7,6 +7,7 @@ const system = require("./system");
 const messageBroker = require("./rabbitmq");
 const ExchangeDefinitions = require('./rabbitmq/config/exchange');
 const QueueDefinitions = require('./rabbitmq/config/queue');
+const DeadLetterWorker = require('./notification/deadletter-worker');
 
 class Application {
   constructor() {
@@ -15,6 +16,7 @@ class Application {
     this.smsWorker = new SMSWorker();
     this.emailWorker = new EmailWorker();
     this.slackWorker = new SlackWorker();
+    this.deadLetterWorker = new DeadLetterWorker();
   }
 
   async start() {
@@ -48,8 +50,9 @@ class Application {
 
       self.authService.run();
       self.smsWorker.run();
-      self.emailWorker.run();
-      self.slackWorker.run();
+      //self.emailWorker.run();
+      //self.slackWorker.run();
+      self.deadLetterWorker.run();
       system.debug("Application started successfully");
     } catch (error) {
       system.error("Error starting application:", error);
@@ -59,8 +62,8 @@ class Application {
 
     self.channel = await messageBroker.createChannel();
 
-    setInterval(() => {
-      messageBroker.publishRpcMessage(
+    setInterval(async () => {
+      const result = await messageBroker.publishRpcMessage(
         self.channel,
         ExchangeDefinitions.AUTH_EXCHANGE,
         QueueDefinitions.AUTH_REPLY_QUEUE,
@@ -70,19 +73,7 @@ class Application {
           password: 'iwantcoconut!'
         }
       );
-
-      // messageBroker.publishRpcMessage(
-      //   self.channel,
-      //   ExchangeDefinitions.AUTH_EXCHANGE,
-      //   QueueDefinitions.AUTH_REPLY_QUEUE,
-      //   'auth.signup',
-      //   {
-      //     username: 'lazy_rabbit',
-      //     password: 'iwantcoconut!',
-      //     sex: 'male',
-      //     age: '26'
-      //   }
-      // );
+      system.debug("result: ", result);
     }, 2000);
   }
 
@@ -91,6 +82,7 @@ class Application {
 
     try {
       // 역순으로 서비스 종료하기
+      if (this.deadLetterWorker) await this.deadLetterWorker.shutdown();
       if (this.smsWorker) await this.smsWorker.shutdown();
       if (this.emailWorker) await this.emailWorker.shutdown();
       if (this.slackWorker) await this.slackWorker.shutdown();

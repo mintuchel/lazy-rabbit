@@ -18,6 +18,15 @@ const ExchangeDefinitions = {
             autoDelete: true,
             internal: false
         }
+    },
+    NOTIFICATION_DLX: {
+        name: 'notification.dlx',
+        type: ExchangeType.TOPIC,
+        options: {
+            durable: false,
+            autoDelete: true,
+            internal: false
+        }
     }
 };
 
