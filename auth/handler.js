@@ -22,10 +22,7 @@ authHandlerMap.set('auth.login', async (channel, msg) => {
 
     messageBroker.publishToExchange(channel, ExchangeDefinitions.NOTIFICATION_EXCHANGE, routingKey, payload);
 
-    return {
-        success: true,
-        message: "Login Success!"
-    };
+    return 'LOGIN SUCCESS!';
 });
 
 authHandlerMap.set('auth.signup', async (channel, msg) => {
@@ -37,10 +34,7 @@ authHandlerMap.set('auth.signup', async (channel, msg) => {
 
     messageBroker.publishToExchange(channel, ExchangeDefinitions.NOTIFICATION_EXCHANGE, routingKey, payload);
 
-    return {
-        success: true,
-        message: "SignUp Success!"
-    };
+    return 'SIGNUP SUCCESS!';
 });
 
 module.exports = authHandlerMap;

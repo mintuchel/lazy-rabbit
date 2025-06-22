@@ -73,7 +73,7 @@ class Application {
           password: 'iwantcoconut!'
         }
       );
-      system.debug("result: ", result);
+      system.info("[APPLICATION] RECIEVED :", result);
     }, 2000);
   }
 
@@ -87,7 +87,7 @@ class Application {
       if (this.emailWorker) await this.emailWorker.shutdown();
       if (this.slackWorker) await this.slackWorker.shutdown();
       if (this.authService) await this.authService.shutdown();
-      if (messageBroker) messageBroker.shutdown();
+      if (messageBroker) await messageBroker.shutdown();
 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
