@@ -136,6 +136,8 @@ npm start
 
 The diagram below illustrates the current message broker architecture used in demo app, focused on message delivery and communication flow.
 
+![Demo-Architecture](./public/demo-architecture.png)
+
 This example omits actual authentication and notification handling or full signup CRUD logic. The focus is solely on inter-service messaging.
 
 ## Roadmap
