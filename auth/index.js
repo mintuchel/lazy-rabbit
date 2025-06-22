@@ -3,14 +3,12 @@ const { env } = require('../config');
 const WorkerDefinitions = require("../rabbitmq/config/worker");
 const Worker = require("../rabbitmq/worker");
 const system = require("../system");
-const handlers = require("./handler");
+const authHandlerMap = require("./handler");
 
 class AuthService extends Worker {
     constructor() {
         super(WorkerDefinitions.AUTH_SERVICE);
-        for (const [key, value] of handlers) {
-            this.registerHandler(key, value);
-        }
+        this.registerHandlerMap(authHandlerMap);
     }
 
     async run() {

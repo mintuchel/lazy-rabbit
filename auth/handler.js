@@ -4,7 +4,7 @@ const system = require("../system");
 const messageBroker = require("../rabbitmq");
 const ExchangeDefinitions = require("../rabbitmq/config/exchange");
 
-const map = new Map();
+const authHandlerMap = new Map();
 
 function getRandomRoutingKey(correlationId, type) {
     const targets = ["notification.sms", "notification.slack", "notification.email"];
@@ -44,4 +44,4 @@ map.set('auth.signup', async (channel, msg) => {
     };
 });
 
-module.exports = map;
+module.exports = authHandlerMap;
