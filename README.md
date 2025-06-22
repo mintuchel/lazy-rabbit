@@ -119,7 +119,7 @@ The specified queue is bound to the given exchange using the provided bindingKey
 
 ## Getting Started with Demo App
 
-A minimal demo app is included under the `demo/` directory.
+A minimal demo app is included under the `example/` directory.
 
 It demonstrates how to use the library with key features such as:
 
@@ -129,10 +129,11 @@ It demonstrates how to use the library with key features such as:
 - Dead-letter exchange (DLX) configuration
 
 ```bash
-cd demo
 npm install
 npm start
 ```
+
+You'll need a RabbitMQ server running locally with default configuration.
 
 The diagram below illustrates the current message broker architecture used in demo app, focused on message delivery and communication flow.
 
