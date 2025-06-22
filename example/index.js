@@ -3,15 +3,16 @@ const SMSWorker = require("./notification/sms-worker");
 const EmailWorker = require("./notification/email-worker");
 const SlackWorker = require("./notification/slack-worker");
 const system = require("./system");
-const messageBroker = require("../lib");
+const MessageBroker = require("../lib");
 const ExchangeDefinitions = require('./config/rabbitmq/exchange');
 const QueueDefinitions = require('./config/rabbitmq/queue');
 const DeadLetterWorker = require('./notification/deadletter-worker');
+const { env } = require("./config");
 
 class Application {
 
   constructor() {
-    this.channel = null;
+    this.messageBroker = new MessageBroker(env.MSG_QUEUE_URL, env.HEARTBEAT_INTERVAL_MS);
     this.authService = new AuthService();
     this.smsWorker = new SMSWorker();
     this.emailWorker = new EmailWorker();
