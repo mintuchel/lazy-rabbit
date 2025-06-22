@@ -1,18 +1,12 @@
 {
-  "name": "avocado",
+  "name": "lazy-rabbit",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "DEBUG=app:* NODE_ENV=development node index.js",
-    "api": "DEBUG=app:* NODE_ENV=development node ./server/api/start.js",
-    "dbagent": "DEBUG=app:* NODE_ENV=development node ./server/dbagent/start.js",
-    "scheduler": "DEBUG=app:* NODE_ENV=development node ./server/scheduler/start.js",
-    "sms": "DEBUG=app:* NODE_ENV=development node ./server/sms/start.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "DEBUG=app:* node example/index.js"
   },
-  "author": "",
+  "author": "mintuchel",
   "license": "MIT",
-  "description": "simple network engine which can be scaled out easily",
   "dependencies": {
     "amqplib": "^0.10.8",
     "dotenv": "^16.5.0",
