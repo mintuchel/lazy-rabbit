@@ -26,7 +26,7 @@ class Worker extends EventEmitter {
 
     startHeartbeatLog() {
         system.debug("%s start", this.name);
-        
+
         setInterval(() => {
             system.debug("%s is running", this.name);
         }, env.HEARTBEAT_INTERVAL_MS);
@@ -92,7 +92,7 @@ class Worker extends EventEmitter {
         }
 
         const routingKey = msg.fields.routingKey;
-        
+
         if (!this.#handlerMap.has(routingKey)) {
             this.emit('notfound', routingKey);
         }

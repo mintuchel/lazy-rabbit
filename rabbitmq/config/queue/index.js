@@ -7,7 +7,6 @@ const QueueDefinitions = {
             exclusive: true
         }
     },
-    // if autoDelete is true, the queue will be deleted when the last consumer unsubscribes
     AUTH_REPLY_QUEUE: {
         name: 'auth.reply.queue',
         options: {
