@@ -1,5 +1,4 @@
 const messageBroker = require("../rabbitmq");
-const { env } = require('../config');
 const system = require("../system");
 const Worker = require("../rabbitmq/worker");
 const WorkerDefinitions = require("../rabbitmq/config/worker");
@@ -31,12 +30,9 @@ class SMSWorker extends Worker {
             await this.init();
         }
 
+        this.startHeartbeatLog();
+        
         messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.onDispatch);
-
-        system.debug("NotificationWorker(SMS) start");
-        setInterval(() => {
-            system.debug("NotificationWorker(SMS) is running");
-        }, env.HEARTBEAT_INTERVAL_MS);
     }
 }
 

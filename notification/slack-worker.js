@@ -30,12 +30,9 @@ class SlackWorker extends Worker {
             await this.init();
         }
 
+        this.startHeartbeatLog();
+        
         messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.onDispatch);
-
-        system.debug("NotificationWorker(Slack) start");
-        setInterval(() => {
-            system.debug("NotificationWorker(Slack) is running");
-        }, env.HEARTBEAT_INTERVAL_MS);
     }
 }
 

@@ -20,12 +20,9 @@ class DeadLetterWorker extends Worker {
             await this.init();
         }
 
+        this.startHeartbeatLog();
+        
         messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.onDispatch);
-
-        system.debug("DeadLetterWorker start");
-        setInterval(() => {
-            system.debug("DeadLetterWorker is running");
-        }, env.HEARTBEAT_INTERVAL_MS);
     }
 }
 

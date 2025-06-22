@@ -1,6 +1,7 @@
 const messageBroker = require("..");
 const system = require("../../system");
 const { EventEmitter } = require('events');
+const { env } = require('../../config');
 
 /**
  * @abstract_like
@@ -22,6 +23,14 @@ class Worker extends EventEmitter {
      * Internal map that stores handler functions associated with each routing key.
      */
     #handlerMap = null;
+
+    startHeartbeatLog() {
+        system.debug("%s start", this.name);
+        
+        setInterval(() => {
+            system.debug("%s is running", this.name);
+        }, env.HEARTBEAT_INTERVAL_MS);
+    }
 
     constructor(config) {
         super();
