@@ -3,16 +3,17 @@ const SMSWorker = require("./notification/sms-worker");
 const EmailWorker = require("./notification/email-worker");
 const SlackWorker = require("./notification/slack-worker");
 const DeadLetterWorker = require('./notification/deadletter-worker');
+const MessageBroker = require('../lib');
 const system = require("./system");
-const messageBroker = require("./lib/message-broker");
 const WorkerDefinitions = require("./config/rabbitmq/worker");
 const ExchangeDefinitions = require('./config/rabbitmq/exchange');
 const QueueDefinitions = require('./config/rabbitmq/queue');
+const { env } = require('./config');
 
 class Application {
 
   constructor() {
-    this.messageBroker = messageBroker;
+    this.messageBroker = new MessageBroker(env.MSG_QUEUE_URL, env.HEARTBEAT_INTERVAL_MS);;
 
     this.authService = null;
     this.smsWorker = null;
@@ -22,11 +23,11 @@ class Application {
   }
 
   async initChannels() {
-    this.authChannel = await messageBroker.createChannel();
-    this.smsChannel = await messageBroker.createChannel();
-    this.emailChannel = await messageBroker.createChannel();
-    this.slackChannel = await messageBroker.createChannel();
-    this.deadLetterChannel = await messageBroker.createChannel();
+    this.authChannel = await this.messageBroker.createChannel();
+    this.smsChannel = await this.messageBroker.createChannel();
+    this.emailChannel = await this.messageBroker.createChannel();
+    this.slackChannel = await this.messageBroker.createChannel();
+    this.deadLetterChannel = await this.messageBroker.createChannel();
   }
 
   async initWorkers() {
