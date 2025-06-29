@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
+const path = require('path');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 // 환경변수 로딩
 // 타 클래스에서는 env 변수를 통해 환경변수 접근

@@ -1,20 +1,20 @@
-const messageBroker = require("../../lib");
+const messageBroker = require("../lib/message-broker");
 const Worker = require("../../lib/worker");
 const { env } = require('../config');
-const WorkerDefinitions = require("../config/rabbitmq/worker");
 const system = require("../system");
 const authHandlerMap = require("./handler");
 
 class AuthService extends Worker {
-    constructor() {
-        super(WorkerDefinitions.AUTH_SERVICE);
+    constructor(channel, config) {
+        super(channel, config);
         this.registerHandlerMap(authHandlerMap);
     }
 
     async run() {
-        if (!this.channel) {
-            await this.init();
-        }
+        // if (!this.channel) {
+        //     const channel = await messageBroker.createChannel();
+        //     await this.init(channel);
+        // }
 
         // to use dispatch in callback, we need to bind current "this" to use same context
         messageBroker.subscribeRpcMessage(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.dispatch.bind(this));

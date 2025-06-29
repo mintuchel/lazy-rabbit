@@ -1,7 +1,7 @@
 "use strict";
 
 const system = require("../system");
-const messageBroker = require("../../lib");
+const messageBroker = require("../lib/message-broker");
 const ExchangeDefinitions = require("../config/rabbitmq/exchange");
 const routingKeys = require("./routing");
 const authHandlerMap = new Map();

@@ -2,22 +2,41 @@ const AuthService = require("./auth");
 const SMSWorker = require("./notification/sms-worker");
 const EmailWorker = require("./notification/email-worker");
 const SlackWorker = require("./notification/slack-worker");
+const DeadLetterWorker = require('./notification/deadletter-worker');
 const system = require("./system");
-const MessageBroker = require("../lib");
+const messageBroker = require("./lib/message-broker");
+const WorkerDefinitions = require("./config/rabbitmq/worker");
 const ExchangeDefinitions = require('./config/rabbitmq/exchange');
 const QueueDefinitions = require('./config/rabbitmq/queue');
-const DeadLetterWorker = require('./notification/deadletter-worker');
-const { env } = require("./config");
 
 class Application {
 
   constructor() {
-    this.messageBroker = new MessageBroker(env.MSG_QUEUE_URL, env.HEARTBEAT_INTERVAL_MS);
-    this.authService = new AuthService();
-    this.smsWorker = new SMSWorker();
-    this.emailWorker = new EmailWorker();
-    this.slackWorker = new SlackWorker();
-    this.deadLetterWorker = new DeadLetterWorker();
+    this.messageBroker = messageBroker;
+
+    this.authService = null;
+    this.smsWorker = null;
+    this.emailWorker = null;
+    this.slackWorker = null;
+    this.deadLetterWorker = null;
+  }
+
+  async initChannels() {
+    this.authChannel = await messageBroker.createChannel();
+    this.smsChannel = await messageBroker.createChannel();
+    this.emailChannel = await messageBroker.createChannel();
+    this.slackChannel = await messageBroker.createChannel();
+    this.deadLetterChannel = await messageBroker.createChannel();
+  }
+
+  async initWorkers() {
+    await this.initChannels();
+
+    this.authService = new AuthService(this.authChannel, WorkerDefinitions.AUTH_SERVICE);
+    this.smsWorker = new SMSWorker(this.smsChannel, WorkerDefinitions.SMS_WORKER);
+    this.emailWorker = new EmailWorker(this.emailChannel, WorkerDefinitions.EMAIL_WORKER);
+    this.slackWorker = new SlackWorker(this.slackChannel, WorkerDefinitions.SLACK_WORKER);
+    this.deadLetterWorker = new DeadLetterWorker(this.deadLetterChannel, WorkerDefinitions.DEAD_LETTER_WORKER);
   }
 
   async start() {
@@ -45,9 +64,9 @@ class Application {
     });
 
     try {
-      // connection 하나만 생성되게 하기 위해 messageBroker.run 에 await 걸기 -> 이거 없으면 아래꺼 다같이 비동기적으로 진행해서 connection이 평균 3-4개 생성됨
-      // 그 이후부터는 비동기적으로 진행
-      await messageBroker.run();
+      await self.messageBroker.run();
+
+      await self.initWorkers();
 
       self.authService.run();
       self.smsWorker.run();
@@ -61,10 +80,10 @@ class Application {
       throw error;
     }
 
-    self.channel = await messageBroker.createChannel();
+    self.channel = await self.messageBroker.createChannel();
 
     setInterval(async () => {
-      const result = await messageBroker.publishRpcMessage(
+      const result = await self.messageBroker.publishRpcMessage(
         self.channel,
         ExchangeDefinitions.AUTH_EXCHANGE,
         QueueDefinitions.AUTH_REPLY_QUEUE,
@@ -88,7 +107,7 @@ class Application {
       if (this.emailWorker) await this.emailWorker.shutdown();
       if (this.slackWorker) await this.slackWorker.shutdown();
       if (this.authService) await this.authService.shutdown();
-      if (messageBroker) await messageBroker.shutdown();
+      if (this.messageBroker) await this.messageBroker.shutdown();
 
       await new Promise(resolve => setTimeout(resolve, 1000));
 

@@ -1,12 +1,10 @@
-const messageBroker = require("../../lib");
+const messageBroker = require("../lib/message-broker");
 const Worker = require("../../lib/worker");
-const { env } = require('../config');
 const system = require("../system");
-const WorkerDefinitions = require("../config/rabbitmq/worker");
 
 class EmailWorker extends Worker {
-    constructor() {
-        super(WorkerDefinitions.EMAIL_WORKER);
+    constructor(channel, config) {
+        super(channel, config);
     }
 
     onDispatch(channel, msg) {
@@ -27,10 +25,6 @@ class EmailWorker extends Worker {
     }
 
     async run() {
-        if (!this.channel) {
-            await this.init();
-        }
-
         this.startHeartbeatLog();
 
         messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.onDispatch);
