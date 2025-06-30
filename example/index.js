@@ -64,8 +64,7 @@ class Application {
     });
 
     try {
-      await self.messageBroker.run();
-
+      // await self.messageBroker.run();
       await self.initWorkers();
 
       self.authService.run();

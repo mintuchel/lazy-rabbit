@@ -14,27 +14,39 @@ function getRandomRoutingKey(correlationId, type) {
 }
 
 authHandlerMap.set('auth.login', async (channel, msg) => {
-    const payload = JSON.parse(msg.content.toString());
-    system.info("[RECIEVED] AuthService (Login): ", payload);
+    try {
+        const payload = JSON.parse(msg.content.toString());
+        system.info("[RECIEVED] AuthService (Login): ", payload);
 
-    const correlationId = msg.properties.correlationId;
-    const routingKey = getRandomRoutingKey(correlationId, 'login');
+        const correlationId = msg.properties.correlationId;
+        const routingKey = getRandomRoutingKey(correlationId, 'login');
 
-    messageBroker.publishToExchange(channel, ExchangeDefinitions.NOTIFICATION_EXCHANGE, routingKey, payload);
-
-    return 'LOGIN SUCCESS!';
+        messageBroker.publishToExchange(channel, ExchangeDefinitions.NOTIFICATION_EXCHANGE, routingKey, payload);
+        
+        channel.ack(msg);
+        return 'LOGIN SUCCESS!';
+    } catch (err) {
+        channel.nack(msg, false, false);
+        throw new Error(err);
+    }
 });
 
 authHandlerMap.set('auth.signup', async (channel, msg) => {
-    const payload = JSON.parse(msg.content.toString());
-    system.info("[RECIEVED] AuthService (SignUp): ", payload);
+    try {
+        const payload = JSON.parse(msg.content.toString());
+        system.info("[RECIEVED] AuthService (SignUp): ", payload);
 
-    const correlationId = msg.properties.correlationId;
-    const routingKey = getRandomRoutingKey(correlationId, 'signup');
+        const correlationId = msg.properties.correlationId;
+        const routingKey = getRandomRoutingKey(correlationId, 'signup');
 
-    messageBroker.publishToExchange(channel, ExchangeDefinitions.NOTIFICATION_EXCHANGE, routingKey, payload);
-
-    return 'SIGNUP SUCCESS!';
+        messageBroker.publishToExchange(channel, ExchangeDefinitions.NOTIFICATION_EXCHANGE, routingKey, payload);
+        
+        channel.ack(msg);
+        return 'SIGNUP SUCCESS!';
+    } catch (err) {
+        channel.nack(msg, false, false);
+        throw new Error(err);
+    }
 });
 
 module.exports = authHandlerMap;
