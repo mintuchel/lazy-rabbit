@@ -43,7 +43,6 @@ class Application {
   async start() {
     system.debug('Starting application...');
 
-    // 콜백이나 내부 함수에서 외부 this를 안전하게 참조하기 위한 우회 방식
     const self = this;
 
     // HANG-UP
@@ -102,7 +101,6 @@ class Application {
     system.debug("Shutting down gracefully...");
 
     try {
-      // 역순으로 서비스 종료하기
       if (this.deadLetterWorker) await this.deadLetterWorker.shutdown();
       if (this.smsWorker) await this.smsWorker.shutdown();
       if (this.emailWorker) await this.emailWorker.shutdown();
