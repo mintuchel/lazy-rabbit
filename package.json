@@ -1,6 +1,7 @@
 {
   "name": "lazy-rabbit",
   "version": "1.0.0",
+  "description": "A lightweight wrapper around amqplib that simplifies configuration and messagebroker architecture",
   "main": "lib/index.js",
   "scripts": {
     "start": "DEBUG=app:* node example/index.js"
