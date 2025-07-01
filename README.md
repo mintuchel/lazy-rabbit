@@ -34,7 +34,7 @@ This design allows you to focus purely on **producer** and **consumer** logic �
 
 ### 4. Build Message Consumers by Extending the Base Worker
 
-The base Worker class provides a structured foundation for creating message consumers. By extending it, you can easily define the exchange, queue to listen to specific messages. Routing key-based handler registration is supported, allowing a single worker to dynamically process multiple tasks. Simply inherit, configure and register handlers - no boilerplate required.
+The base Worker class provides a structured foundation for creating message consumers. By extending it, you can easily define the exchange, queue to listen to specific messages. Routing key-based handler registration is supported, allowing a single worker to dynamically process multiple tasks. Simply inherit, configure and register handlers - _no boilerplate required_.
 
 ### 5. Dynamic Handler Registration & RoutingKey-Based Dispatch
 
@@ -48,13 +48,13 @@ Seamlessly implement RPC communication patterns with built-in methods for reques
 
 ### 7. Simple Dead-Letter Pipeline Setup
 
-Dead-Lettering is effectively just another form of message consumption - the only difference is that you don’t manually define the publisher. In this case, the **original queue acts as the publisher** for dead-lettered messages, automatically forwarding them to the configured Dead-Letter Exchange(DLX).
+Dead-Lettering is effectively **just another form of message consumption** - the only difference is that you don’t manually define the publisher. In this case, the **original queue acts as the publisher** for dead-lettered messages, automatically forwarding them to the configured Dead-Letter Exchange(DLX).
 
 With lazy-rabbit, subscribing to DLX messages is no different from regular consumers. Just bind your DLX to the appropriate queue and routing key using subscribeToExchange, and handle the messages as usual - by your callback function called by dispatch method.
 
 ## Configuration Schemas
 
-### 1. Exchange Configuration Schema
+### 1. Exchange Schema
 
 ```javascript
 NOTIFICATION_EXCHANGE: {
@@ -99,7 +99,7 @@ EMAIL_NOTIFICATION_WORKER: {
     name: 'email-notification',
     exchangeDefinition: ExchangeDefinitions.NOTIFICATION_EXCHANGE,
     queueDefinition: QueueDefinitions.NOTIFY_EMAIL_QUEUE,
-    bindingKey: 'notify.email.#'
+    bindingKey: BindingKeys.EMAIL_WORKER_BK
 }
 ```
 
@@ -127,6 +127,7 @@ It demonstrates how to use the library with key features such as:
 - RPC messaging
 - Dynamic handler registration in worker consumers
 - Dead-letter exchange (DLX) configuration
+- Random error generation in workers
 
 ```bash
 npm install
@@ -137,7 +138,7 @@ You'll need a RabbitMQ server running locally with default configuration.
 
 The diagram below illustrates the current message broker architecture used in demo app, focused on message delivery and communication flow.
 
-![Demo-Architecture](./public/demo-architecture.png)
+![Demo-Architecture](https://github.com/user-attachments/assets/c82e3df3-e2ff-4439-9057-f569c6b3134c)
 
 This example omits actual authentication and notification handling or full signup CRUD logic. The focus is solely on inter-service messaging.
 
@@ -149,3 +150,4 @@ This example omits actual authentication and notification handling or full signu
 - [x] Support x-dead-letter-exchange advanced option when publishing to exchange
 - [ ] Error Handling (think this will take long since amqp doesnt support error codes. they are emitting errors by pure string...)
 - [ ] Support multi-channel usage per Worker based on purpose (currently, each Worker is limited to a single channel)
+- [x] Allow users to handle ack/nack explicitly within their own handlers for flexible success/failure message processing
