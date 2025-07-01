@@ -1,12 +1,21 @@
 {
   "name": "lazy-rabbit",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "start": "DEBUG=app:* node example/index.js"
   },
-  "author": "mintuchel",
+  "author": {
+    "name": "mintuchel",
+    "email": "max3627@naver.com"
+  },
   "license": "MIT",
+  "keywords": [
+    "amqp",
+    "amqplib",
+    "rabbitmq"
+  ],
+  "homepage": "https://github.com/mintuchel/lazy-rabbit.git",
   "dependencies": {
     "amqplib": "^0.10.8",
     "dotenv": "^16.5.0",
