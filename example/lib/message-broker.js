@@ -1,4 +1,4 @@
-const MessageBroker = require("../../lib");
+const { MessageBroker } = require("../../lib");
 const { env } = require("../config");
 
 const messageBroker = new MessageBroker(env.MSG_QUEUE_URL);

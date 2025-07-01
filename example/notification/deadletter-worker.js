@@ -1,6 +1,6 @@
+const { Worker } = require("../../lib");
 const messageBroker = require("../lib/message-broker");
 const system = require("../system");
-const Worker = require("../../lib/worker");
 
 class DeadLetterWorker extends Worker {
     constructor(channel, config) {

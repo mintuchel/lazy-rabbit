@@ -1,6 +1,6 @@
-const Worker = require("../../lib/worker");
-const authHandlerMap = require("./handler");
+const { Worker } = require("../../lib");
 const messageBroker = require("../lib/message-broker");
+const authHandlerMap = require("./handler");
 
 class AuthService extends Worker {
     constructor(channel, config) {

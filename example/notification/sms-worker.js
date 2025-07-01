@@ -1,5 +1,5 @@
+const { Worker } = require("../../lib");
 const messageBroker = require("../lib/message-broker");
-const Worker = require("../../lib/worker");
 const system = require("../system");
 
 class SMSWorker extends Worker {

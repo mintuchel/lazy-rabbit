@@ -1,5 +1,5 @@
+const { Worker } = require("../../lib");
 const messageBroker = require("../lib/message-broker");
-const Worker = require("../../lib/worker");
 const system = require("../system");
 
 class SlackWorker extends Worker {
@@ -17,7 +17,7 @@ class SlackWorker extends Worker {
             system.error("[ERROR] Slack Worker : throwing random error");
             throw new Error("Random error occurred in Slack Worker");
         }
-s
+        
         system.info("[PROCESSED] Slack Worker : successfully processed");
         channel.ack(msg);
     }
