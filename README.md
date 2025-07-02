@@ -40,6 +40,10 @@ The base Worker class provides a structured foundation for creating message cons
 
 For heavy-weight tasks, it’s often best to assign a dedicated Worker with a single callback to ensure isolation and performance. However, this approach can become inefficient for lightweight tasks. To address this, the Worker class includes a built-in dispatch mechanism that dynamically routes messages to the appropriate handler based on their routing key—allowing a single Worker to flexibly manage multiple lightweight operations without unnecessary duplication.
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a9d0d664-3d82-4c85-a067-399cb2b1c539" width="550" alt="Worker Scale-Out" />
+</p>
+
 In this structure, you can scale-out easily when workload increases beyond what a single Worker can handle. Therefore, you can attach additional Worker instances to the same queue to parallelize message processing and offload pressure from a single worker—enabling scalable, load-balanced execution as demand grows.
 
 ### 6. Built-in RPC Pattern Support
@@ -52,7 +56,7 @@ Dead-Lettering is effectively **just another form of message consumption** - the
 
 With lazy-rabbit, subscribing to DLX messages is no different from regular consumers. Just bind your DLX to the appropriate queue and routing key using subscribeToExchange, and handle the messages as usual - by your callback function called by dispatch method.
 
-### **8. Flexible Message Acknowledgement Handling**
+### 8. Flexible Message Acknowledgement Handling
 
 Unlike rigid implementations that enforce built-in message acknowledgment behavior, lazy-rabbit delegates ack/nack control to **user-defined handlers**, giving you full flexibility over success/failure management.
 
