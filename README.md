@@ -52,6 +52,12 @@ Dead-Lettering is effectively **just another form of message consumption** - the
 
 With lazy-rabbit, subscribing to DLX messages is no different from regular consumers. Just bind your DLX to the appropriate queue and routing key using subscribeToExchange, and handle the messages as usual - by your callback function called by dispatch method.
 
+### **8. Flexible Message Acknowledgement Handling**
+
+Unlike rigid implementations that enforce built-in message acknowledgment behavior, lazy-rabbit delegates ack/nack control to **user-defined handlers**, giving you full flexibility over success/failure management.
+
+When registering a callback with a Worker’s dispatcher, you receive the raw channel and msg objects. This allows you to explicitly call ack/nack inside your logic, based on your own validation and business needs. The MessageBroker class itself only performs a `channel.reject(msg)` in cases where the message format is invalid.
+
 ## Configuration Schemas
 
 ### 1. Exchange Schema
