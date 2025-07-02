@@ -80,7 +80,7 @@ class Application {
     self.channel = await self.messageBroker.createChannel();
 
     setInterval(async () => {
-      const result = await self.messageBroker.publishRpcMessage(
+      const response = await self.messageBroker.publishRpcMessage(
         self.channel,
         ExchangeDefinitions.AUTH_EXCHANGE,
         QueueDefinitions.AUTH_REPLY_QUEUE,
@@ -90,7 +90,8 @@ class Application {
           password: 'iwantcoconut!'
         }
       );
-      system.info("[APPLICATION] RECIEVED :", result);
+      const msg = JSON.parse(response.content.toString());
+      system.info("[APPLICATION] RECIEVED :", msg);
     }, 2000);
   }
 
