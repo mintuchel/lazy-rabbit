@@ -2,9 +2,14 @@
   "name": "lazy-rabbit",
   "version": "1.0.1",
   "description": "A lightweight wrapper around amqplib that simplifies configuration and messagebroker architecture",
-  "main": "lib/index.js",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
   "scripts": {
-    "start": "DEBUG=app:* node example/index.js"
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "start": "DEBUG=app:* node dist/example/index.js",
+    "dev": "DEBUG=app:* ts-node example/index.ts",
+    "clean": "rm -rf dist"
   },
   "author": {
     "name": "mintuchel",
@@ -19,8 +24,16 @@
   "homepage": "https://github.com/mintuchel/lazy-rabbit.git",
   "dependencies": {
     "amqplib": "^0.10.8",
+    "debug": "^4.4.1",
     "dotenv": "^16.5.0",
-    "uuid": "^11.1.0",
-    "debug": "^4.4.1"
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.7",
+    "@types/debug": "^4.1.12",
+    "@types/node": "^24.0.10",
+    "@types/uuid": "^10.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }
