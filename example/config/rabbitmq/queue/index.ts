@@ -1,4 +1,6 @@
-const QueueDefinitions = {
+import { QueueConfig } from "../../../../lib/types/index";
+
+const QueueDefinitions: Record<string, QueueConfig> = {
     AUTH_REQUEST_QUEUE: {
         name: 'auth.request.queue',
         options: {
@@ -64,4 +66,4 @@ const QueueDefinitions = {
     }
 };
 
-module.exports = QueueDefinitions;
+export { QueueDefinitions }; 

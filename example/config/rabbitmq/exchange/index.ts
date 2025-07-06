@@ -1,6 +1,7 @@
-const ExchangeType = require("./types");
+import { ExchangeType } from "../../../../lib/constants/exchange";
+import { ExchangeConfig } from "../../../../lib/types/index";
 
-const ExchangeDefinitions = {
+const ExchangeDefinitions: Record<string, ExchangeConfig> = {
     AUTH_EXCHANGE: {
         name: 'auth.exchange',
         type: ExchangeType.TOPIC,
@@ -30,4 +31,4 @@ const ExchangeDefinitions = {
     }
 };
 
-module.exports = ExchangeDefinitions;
+export { ExchangeDefinitions }; 

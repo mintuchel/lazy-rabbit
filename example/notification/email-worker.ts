@@ -1,13 +1,14 @@
-const { Worker } = require("../../lib");
-const messageBroker = require("../lib/message-broker");
-const system = require("../system");
+import { Worker, WorkerConfig } from "../../lib";
+import { messageBroker } from "../lib/message-broker";
+import { system } from "../system";
+import * as amqp from 'amqplib';
 
-class EmailWorker extends Worker {
-    constructor(channel, config) {
+export class EmailWorker extends Worker {
+    constructor(channel: amqp.Channel, config: WorkerConfig) {
         super(channel, config);
     }
 
-    onDispatch(channel, msg) {
+    onDispatch(channel: amqp.Channel, msg: amqp.Message): void {
         const payload = JSON.parse(msg.content.toString());
         system.info("[RECIEVED] Worker (Email): ", payload);
 
@@ -23,11 +24,9 @@ class EmailWorker extends Worker {
         channel.ack(msg);
     }
 
-    async run() {
+    async run(): Promise<void> {
         this.startHeartbeatLog();
 
-        messageBroker.subscribeToExchange(this.channel, this.exchangeDefinition, this.queueDefinition, this.bindingKey, this.onDispatch);
+        messageBroker.subscribeToExchange(this.channel, this.exchangeConfig, this.queueConfig, this.bindingKey, this.onDispatch.bind(this));
     }
-}
-
-module.exports = EmailWorker;
+} 
