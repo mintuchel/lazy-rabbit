@@ -8,7 +8,7 @@ export class SlackWorker extends Worker {
         super(channel, config);
     }
 
-    onDispatch(channel: Channel, msg: Message): void {
+    async onDispatch(channel: Channel, msg: Message): Promise<void> {
         const payload = JSON.parse(msg.content.toString());
         system.info("[RECIEVED] Worker (Slack): ", payload);
 

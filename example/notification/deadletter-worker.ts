@@ -8,7 +8,7 @@ export class DeadLetterWorker extends Worker {
         super(channel, config);
     }
 
-    onDispatch(channel: Channel, msg: Message): void {
+    async onDispatch(channel: Channel, msg: Message): Promise<void> {
         const payload = JSON.parse(msg.content.toString());
         const routingKey = msg.fields.routingKey;
         system.error("[RECIEVED] DEAD-LETTER-WORKER: ", payload, "routingKey:", routingKey);
