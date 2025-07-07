@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { Channel, Message } from 'amqplib';
-import { ExchangeConfig, QueueConfig, WorkerConfig, DispatchFunction } from '../types';
+import { ExchangeConfig, QueueConfig, WorkerConfig, Handler } from '../types';
 
 /**
  * @abstract_like
@@ -17,11 +17,8 @@ import { ExchangeConfig, QueueConfig, WorkerConfig, DispatchFunction } from '../
  */
 export class Worker extends EventEmitter {
 
-    /**
-     * @private
-     * Internal map that stores handler functions associated with each routing key.
-     */
-    protected handlerMap: Map<string, DispatchFunction>;
+    // Internal map that stores handler functions associated with each routing key.
+    protected handlerMap: Map<string, Handler>;
 
     protected channel: Channel;
     protected name: string;
@@ -29,27 +26,19 @@ export class Worker extends EventEmitter {
     protected queueConfig: QueueConfig;
     protected bindingKey: string;
 
-    startHeartbeatLog(): void {
-        console.debug("%s start", this.name);
-
-        setInterval(() => {
-            console.debug("%s is running", this.name);
-        }, 5000);
-    }
-
     /**
      * Constructor for new Worker instance 
      * 
-     * @param {amqplib.Channel} channel - amqp channel used by the worker when sending/recieving messages
-     * @param {*} config - configuration object of worker
+     * @param {Channel} channel - amqp channel used by the worker when sending/recieving messages
+     * @param {WorkerConfig} config - configuration object of worker
      */
     constructor(channel: Channel, config: WorkerConfig) {
 
         if (!channel) {
-            throw new Error("channel for worker is missing");
+            throw new Error("Channel for worker is missing");
         }
         if (!config) {
-            throw new Error("config for worker is missing");
+            throw new Error("WorkerConfig is missing");
         }
 
         super();
@@ -72,14 +61,22 @@ export class Worker extends EventEmitter {
         console.info("[%s] Waiting for routingKey %s messages", this.name, this.bindingKey);
     }
 
+    protected startHeartbeatLog(): void {
+        console.debug("%s start", this.name);
+
+        setInterval(() => {
+            console.debug("%s is running", this.name);
+        }, 5000);
+    }
+
     /**
      * Registers a handler callback function for a specific routingKey.
      * When a message arrives that matches the routingKey, the corresponding registered handler will be invoked to process the message.
      * 
      * @param {string} routingKey - The routingKey to associate with the callback.
-     * @param {Function} callback - A function that will handle the message when the routingKey matches
+     * @param {Handler} callback - A function that will handle the message when the routingKey matches
      */
-    registerHandler(routingKey: string, callback: DispatchFunction): void {
+    registerHandler(routingKey: string, callback: Handler): void {
         if (this.handlerMap) {
             this.handlerMap.set(routingKey, callback);
         }
@@ -88,9 +85,9 @@ export class Worker extends EventEmitter {
     /**
      * Registers a complete handleMap object to worker
      * 
-     * @param {Map<string, Function>} handlerMap - A 'Map' datastructure instance where keys are routingKeys and values are async handler functions (channel, msg) => Promise.
+     * @param {Map<string, Handler>} handlerMap - A 'Map' datastructure instance where keys are routingKeys and values are async handler functions (channel, msg) => Promise.
      */
-    registerHandlerMap(handlerMap: Map<string, DispatchFunction>): void {
+    registerHandlerMap(handlerMap: Map<string, Handler>): void {
         this.handlerMap = handlerMap;
     }
 
@@ -100,10 +97,12 @@ export class Worker extends EventEmitter {
      * 1. Error Handling of channel and msg parameters are all handled inside MessageBroker which uses dispatch method
      * 2. Acknowledgment signal (channel.ack) must be handled exclusively inside the handler method.
      * 
-     * This allows each worker to handle multiple messages dynamically depending on the routingKey.
+     * This design enables each worker to process multiple message types dynamically, depending on the routingKey.
+     * 
      * @async
      * @param {Channel} channel - amqp channel used by the worker
      * @param {Message} msg - Pure amqp message produced by producer
+     * @returns {Promise<any>} - The result returned by the handler after processing the message. Since the handler is user-defined, the return type is intentionally flexible.
      */
     async dispatch(channel: Channel, msg: Message): Promise<any> {
 
@@ -135,11 +134,10 @@ export class Worker extends EventEmitter {
         if (this.channel) {
             try {
                 await this.channel.close();
-                this.channel = null as any;
                 console.debug("[%s] Channel for %s closed", this.name, this.bindingKey);
             } catch (err) {
                 console.error("[%s] Error closing channel for %s:", this.name, this.bindingKey, err);
-            }
+            } 
         }
     }
 } 

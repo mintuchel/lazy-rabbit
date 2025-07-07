@@ -3,6 +3,6 @@ export const ExchangeType = {
     DIRECT: 'direct',
     TOPIC: 'topic',
     HEADERS: 'headers',
-  } as const;
+} as const;
   
-  export type ExchangeType = typeof ExchangeType[keyof typeof ExchangeType];
+export type ExchangeType = typeof ExchangeType[keyof typeof ExchangeType];

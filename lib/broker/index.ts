@@ -1,7 +1,7 @@
-import * as amqp from 'amqplib';
+import { connect, Channel, Message, ChannelModel, Replies } from 'amqplib';
 import { v4 as uuidv4 } from 'uuid';
 import { EventEmitter } from 'events';
-import { ExchangeConfig, QueueConfig, MessageProperties, DispatchFunction } from '../types';
+import { ExchangeConfig, QueueConfig, MessageProperties, Handler } from '../types';
 
 export class MessageBroker extends EventEmitter {
 
@@ -11,7 +11,7 @@ export class MessageBroker extends EventEmitter {
      * Created once and reused for all operations within this class only.
      * Not exposed outside the MessageBroker class.
      */
-    private connection: amqp.ChannelModel | null = null;
+    private connection: ChannelModel | null = null;
 
     private MSG_QUEUE_URL: string;
     public HEARTBEAT_INTERVAL_MS: number;
@@ -54,15 +54,16 @@ export class MessageBroker extends EventEmitter {
     }
 
     /**
+     * Creates a shared amqp connection instance.
+     * 
      * @async
      * @private
-     * Creates a shared amqp connection instance.
      */
-    private async createConnection(): Promise<amqp.ChannelModel> {
+    private async createConnection(): Promise<ChannelModel> {
         if (this.connection) return this.connection;
 
         try {
-            this.connection = await amqp.connect(this.MSG_QUEUE_URL);
+            this.connection = await connect(this.MSG_QUEUE_URL);
             this.emit('connected');
             return this.connection;
         } catch (err) {
@@ -71,13 +72,14 @@ export class MessageBroker extends EventEmitter {
     }
 
     /**
-     * @async
-     * @private
      * Retrieves the existing amqp connection or creates one if not available.
      * Used in createChannel function
+     * 
+     * @async
+     * @private
      * @returns {Promise<ChannelModel>}
      */
-    private async getConnection(): Promise<amqp.ChannelModel> {
+    private async getConnection(): Promise<ChannelModel> {
         if (this.connection) return this.connection;
 
         try {
@@ -89,10 +91,11 @@ export class MessageBroker extends EventEmitter {
 
     /**
      * Creates and returns a new amqp channel using the current connection.
+     * 
      * @async
      * @returns {Promise<Channel>}
      */
-    async createChannel(): Promise<amqp.Channel> {
+    async createChannel(): Promise<Channel> {
         try {
             const connection = await this.getConnection();
             const channel = await connection.createChannel();
@@ -103,17 +106,16 @@ export class MessageBroker extends EventEmitter {
     }
 
     /**
-     * @private
      * Declares a queue based on the provided definition.
-     * If an empty string is passed as the definition, an exclusive anonymous queue will be created.
+     * If no config is passed, an anonymous queue will be created.
      *
      * @async
+     * @private
      * @param {Channel} channel - AMQP channel used to declare the queue.
-     * @param {QueueConfig} queueConfig - Queue configuration object or empty string("") for an anonymous queue.
-     *  
-     * @returns {Promise<Replies.AssertQueue>} The result of the queue declaration, including the queue name and metadata(messageCount, consumerCount).
+     * @param {QueueConfig} queueConfig - Queue configuration
+     * @returns {Promise<Replies.AssertQueue>}
     */
-    private async assertQueue(channel: amqp.Channel, queueConfig?: QueueConfig): Promise<amqp.Replies.AssertQueue> {
+    private async assertQueue(channel: Channel, queueConfig?: QueueConfig): Promise<Replies.AssertQueue> {
         try {
             // if queueConfig is undefined, anonymous queue is defined
             if (!queueConfig) {
@@ -138,22 +140,22 @@ export class MessageBroker extends EventEmitter {
     /**
     * Sends an RPC message to a specific exchange and waits for a response. 
     * Publishes a message to the specified exchange using the RPC pattern.
-    * Awaits a response on a temporary, exclusive reply queue.
     * 
     * @async
     * @param {Channel} channel - amqp channel used for publishing.
-    * @param {Object} exchangeConfig - Exchange configuration (name, type, durable).
-    * @param {Object} replyQueueConfig - Queue configuration used for replyTo Queue.
+    * @param {ExchangeConfig} exchangeConfig - Exchange configuration
+    * @param {QueueConfig} replyQueueConfig - Queue configuration for replyTo Queue.
     * @param {string} routingKey - Routing key used for message delivery.
     * @param {Object} payload - Message content in JSON format.
+    * @returns {Promise<Message>} - Response message of rpc request
     */
     async publishRpcMessage(
-        channel: amqp.Channel,
+        channel: Channel,
         exchangeConfig: ExchangeConfig,
         replyQueueConfig: QueueConfig,
         routingKey: string,
         payload: any
-    ): Promise<amqp.Message> {
+    ): Promise<Message> {
         try {
             const correlationId = uuidv4();
 
@@ -202,19 +204,18 @@ export class MessageBroker extends EventEmitter {
     *
     * @async
     * @param {Channel} channel - The amqp channel used to set up the subscription.
-    * @param {Object} exchangeDefinition - ExchangeDefinition config object.
-    * @param {Object} queueDefinition - QueueDefinition config object.
+    * @param {ExchangeConfig} exchangeDefinition - ExchangeDefinition configuration.
+    * @param {QueueConfig} queueDefinition - QueueDefinition configuration.
     * @param {string} bindingKey - The bindingKey used for binding queue of Queuedefinition to exchange.
     * @param {function} onDispatch - dispatch function that routes messages by routingKey to registered handlers.
-    * 
-    * @returns {Promise<any>} Response from the handler function selected by onDispatch to be sent back as RPC response.
+    * @returns {Promise<void>}
     */
     async subscribeRpcMessage(
-        channel: amqp.Channel,
+        channel: Channel,
         exchangeConfig: ExchangeConfig,
         queueConfig: QueueConfig,
         bindingKey: string,
-        onDispatch: DispatchFunction
+        onDispatch: Handler
     ): Promise<void> {
 
         try {
@@ -260,14 +261,14 @@ export class MessageBroker extends EventEmitter {
     * This function is called internally in publishRpcMessage
     * 
     * @async
-    * @param {amqplib.Channel} channel - amqp channel used for publishing.
-    * @param {Object} exchangeConfig - Exchange configuration (name, type, durable).
+    * @param {Channel} channel - amqp channel used for publishing.
+    * @param {ExchangeConfig} exchangeConfig - Exchange configuration (name, type, durable).
     * @param {string} routingKey - Routing key used for message delivery.
     * @param {Object} payload - Message content in JSON format.
     * @param {Object} [properties={}] - Optional message properties (e.g. for RPC: replyTo, correlationId).
     */
     async publishToExchange(
-        channel: amqp.Channel,
+        channel: Channel,
         exchangeConfig: ExchangeConfig,
         routingKey: string,
         payload: any,
@@ -288,17 +289,17 @@ export class MessageBroker extends EventEmitter {
     *
     * @async
     * @param {Channel} channel - The amqp channel used for exchange and queue operations.
-    * @param {Object} exchangeConfig - Exchange configuration (name, type, durable).
-    * @param {Object} queueConfig - QueueDefinition config object.
+    * @param {ExchangeConfig} exchangeConfig - Exchange configuration
+    * @param {QueueConfig} queueConfig - QueueDefinition configuration
     * @param {string} bindingKey - Binding key used for binding anonymous_q to exchange.
     * @param {function} onDispatch - dispatch function that routes messages by routingKey to registered handlers.
     */
     async subscribeToExchange(
-        channel: amqp.Channel,
+        channel: Channel,
         exchangeConfig: ExchangeConfig,
         queueConfig: QueueConfig,
         bindingKey: string,
-        onDispatch: DispatchFunction
+        onDispatch: Handler
     ): Promise<void> {
         try {
             await channel.assertExchange(exchangeConfig.name, exchangeConfig.type, exchangeConfig.options);
@@ -338,7 +339,7 @@ export class MessageBroker extends EventEmitter {
         }
     }
 
-    // graceful shutdown by waiting to release current connection...
+    // graceful shutdown by waiting to release current connection
     async shutdown(): Promise<void> {
         console.info('[MESSAGE-BROKER] Connection closing...');
         if (this.connection) {
