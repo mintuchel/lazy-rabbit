@@ -12,7 +12,7 @@ export interface MessageBrokerConfig {
 export interface ExchangeConfig {
     name: string; // The name of the exchange
     type: ExchangeType; // The type of the exchange
-    // Optional settings for exchange
+    // Additional exchange settings such as durable, autoDelete, etc
     options?: {
         durable?: boolean;
         autoDelete?: boolean;
@@ -25,7 +25,7 @@ export interface ExchangeConfig {
  */
 export interface QueueConfig {
     name: string; // The name of the queue
-    // Optional settings for queue
+    // Additional queue options such as durability, exclusivity and advance queue features like dead-lettering and messageTTL via arguments.
     options?: {
         durable?: boolean;
         exclusive?: boolean;
@@ -39,9 +39,9 @@ export interface QueueConfig {
  */
 export interface WorkerConfig {
     name: string; // Name of the worker
-    exchangeConfig: ExchangeConfig; // Exchange configuration used by the worker
-    queueConfig: QueueConfig; // Queue configuration used by the worker
-    bindingKey: string; // Routing Key used for binding queue to exchange
+    exchangeConfig: ExchangeConfig; // Exchange configuration worker listens to
+    queueConfig: QueueConfig; // Queue configuration this worker consumes from. If left blank, anonymous queue is used automatically.
+    bindingKey: string; // Routing Key used for binding queue to exchange (The routing key pattern used for message filtering)
 }
 
 /**
