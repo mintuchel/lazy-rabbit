@@ -1,6 +1,6 @@
 {
   "name": "lazy-rabbit",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A lightweight wrapper around amqplib that simplifies configuration and messagebroker architecture",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
