@@ -1,12 +1,11 @@
 import { system } from "../system";
 import { messageBroker } from "../lib/message-broker";
 import { ExchangeDefinitions } from "../config/rabbitmq/exchange";
+import { Channel, Message } from 'amqplib';
+import { Handler } from '../../lib/types';
 import * as routingKeys from "./routing";
-import * as amqp from 'amqplib';
 
-type DispatchFunction = (channel: amqp.Channel, msg: amqp.Message) => Promise<any>;
-
-const authHandlerMap = new Map<string, DispatchFunction>();
+const authHandlerMap = new Map<string, Handler>();
 
 const routingKeyList = [routingKeys.SMS_NOTIFICATION_RK, routingKeys.EMAIL_NOTIFICATION_RK, routingKeys.SLACK_NOTIFICATION_RK];
 
@@ -15,7 +14,7 @@ function getRandomRoutingKey(correlationId: string, type: string): string {
     return routingKeyList[index] + '.' + type;
 }
 
-authHandlerMap.set('auth.login', async (channel: amqp.Channel, msg: amqp.Message) => {
+authHandlerMap.set('auth.login', async (channel: Channel, msg: Message) => {
     try {
         const payload = JSON.parse(msg.content.toString());
         system.info("[RECIEVED] AuthService (Login): ", payload);
@@ -33,7 +32,7 @@ authHandlerMap.set('auth.login', async (channel: amqp.Channel, msg: amqp.Message
     }
 });
 
-authHandlerMap.set('auth.signup', async (channel: amqp.Channel, msg: amqp.Message) => {
+authHandlerMap.set('auth.signup', async (channel: Channel, msg: Message) => {
     try {
         const payload = JSON.parse(msg.content.toString());
         system.info("[RECIEVED] AuthService (SignUp): ", payload);

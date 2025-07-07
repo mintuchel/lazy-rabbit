@@ -1,10 +1,10 @@
 import { Worker, WorkerConfig } from "../../lib";
 import { messageBroker } from "../lib/message-broker";
 import { authHandlerMap } from "./handler";
-import * as amqp from 'amqplib';
+import { Channel } from 'amqplib';
 
 export class AuthService extends Worker {
-    constructor(channel: amqp.Channel, config: WorkerConfig) {
+    constructor(channel: Channel, config: WorkerConfig) {
         super(channel, config);
         this.registerHandlerMap(authHandlerMap);
     }
