@@ -48,7 +48,7 @@ In this structure, you can scale-out easily when workload increases beyond what 
 
 ### 6. Built-in RPC Pattern Support
 
-Seamlessly implement RPC communication patterns with built-in methods for request/reply messaging. Features include temporary reply queues, correlation IDs, timeouts, and automatic response handling.
+lazy-rabbit includes native support for the AMQP-based RPC messaging pattern. It abstracts the boilerplate required for setting up correlation IDs, reply queues, and response routing. The `publishRpcMessage` method allows you to send a message and automatically wait for the response, while `subscribeRpcMessage` handles incoming RPC requests and sends responses seamlessly by referencing the replyTo property of the message. This built-in mechanism enables robust two-way communication between services with minimal configuration, making it ideal for microservices and event-driven architectures.
 
 ### 7. Simple Dead-Letter Pipeline Setup
 
@@ -64,6 +64,9 @@ When registering a callback with a Worker’s dispatcher, you receive the raw ch
 
 ## Configuration Schemas
 
+All type definitions used in this library can be found in the [types package](./lib/types/index.ts).
+Below are some representative examples of the available type declarations
+
 ### 1. Exchange Schema
 
 ```javascript
@@ -77,10 +80,6 @@ NOTIFICATION_EXCHANGE: {
     }
 }
 ```
-
-- name: Name of the exchange
-- type: Exchange type — supports 'direct', 'topic', 'fanout', or 'headers'
-- options: Additional settings such as durable, autoDelete, etc
 
 ### 2. Queue Schema
 
@@ -99,9 +98,6 @@ NOTIFICATION_SMS_QUEUE: {
 }
 ```
 
-- name: Name of the queue
-- options: options: Standard AMQP queue settings such as durability, exclusivity and advance queue features like dead-lettering and messageTTL via arguments.
-
 ### 3. Worker Schema
 
 ```javascript
@@ -112,12 +108,6 @@ EMAIL_NOTIFICATION_WORKER: {
     bindingKey: BindingKeys.EMAIL_WORKER_BK
 }
 ```
-
-The specified queue is bound to the given exchange using the provided bindingKey pattern for routing incoming messages.
-
-- exchangeDefinition: Exchange schema worker listens to
-- queueDefinition: Queue schema this worker consumes from. if left blank, anonymous queue is used automatically.
-- bindingKey: The routing key pattern used for message filtering
 
 ## Caveats
 
@@ -154,8 +144,8 @@ This example omits actual authentication and notification handling or full signu
 
 ## Roadmap
 
-- [ ] Migrate codebase to TypeScript
-- [ ] Automatically re-connect, re-subscribe, or retry publishing
+- [x] Migrate codebase to TypeScript
+- [ ] Automatic re-connect, re-subscribe, and re-publishing
 - [ ] Add retry mechanism for message consumption
 - [x] Support x-dead-letter-exchange advanced option when publishing to exchange
 - [ ] Error Handling (think this will take long since amqp doesnt support error codes. they are emitting errors by pure string...)
