@@ -1,23 +1,22 @@
 ## [1.1.0] - 2025-07-03
 
-### Changed
+### Minor Update
 
-- Migrated entire codebase from JavaScript to TypeScript
+- migrated codebase from javascript to typescript
 
 ## [1.0.1] - 2025-06-26
 
-### Fixed
+### Patch
 
-- Minor bugs in MessageBroker class
-- Update README
+- fixed bugs in broker class
+- added exception handling by event-emitter in broker and worker class
 
 ## [1.0.0]
 
 ### Added
 
-- This changelog
-- License
-- Badges
-- Upgrading dependencies
+- changelog
+- license
+- dependencies
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
