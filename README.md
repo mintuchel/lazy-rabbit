@@ -12,7 +12,7 @@ While the amqplib library offers a great deal of control and flexibility by expo
 
 To address this, lazy-rabbit introduces lightweight wrapper functions around common amqplib publishing and subscribing patterns. With these wrappers, you can send and receive messages more easily by simply providing configuration objects along with routing information (such as routingKey, bindingKey, etc.). The internal logic takes care of interpreting and applying these settings appropriately.
 
-In addition, a base worker class is included. The Worker comes with an internal handlerMap and message dispatcher, allowing you to register callback functions for specific routingKeys. When a message arrives, the appropriate handler is automatically invoked based on the routing key.
+In addition, a base worker class is included. The Worker comes with an internal handlerMap and message dispatcher, allowing you to register callback functions for specific routing keys. When a message arrives, the appropriate handler is automatically invoked based on the routing key.
 
 ## Features
 
@@ -64,8 +64,9 @@ When registering a callback with a Worker’s dispatcher, you receive the raw ch
 
 ## Configuration Schemas
 
-All type definitions used in this library can be found in the [types package](./lib/types/index.ts).
-Below are some representative examples of the available type declarations
+All type definitions used in this library can be found in `/lib/types/index.ts`.
+
+Below are some examples of the type declarations.
 
 ### 1. Exchange Schema
 
@@ -80,6 +81,10 @@ NOTIFICATION_EXCHANGE: {
     }
 }
 ```
+
+- name: Name of the exchange
+- type: Exchange type — supports 'direct', 'topic', 'fanout', or 'headers'
+- options: Additional settings such as durable, autoDelete, etc
 
 ### 2. Queue Schema
 
@@ -98,16 +103,25 @@ NOTIFICATION_SMS_QUEUE: {
 }
 ```
 
+- name: Name of the queue
+- options: Standard AMQP queue settings such as durability, exclusivity and advance queue features like dead-lettering and messageTTL via arguments.
+
 ### 3. Worker Schema
 
 ```javascript
 EMAIL_NOTIFICATION_WORKER: {
     name: 'email-notification',
-    exchangeDefinition: ExchangeDefinitions.NOTIFICATION_EXCHANGE,
-    queueDefinition: QueueDefinitions.NOTIFY_EMAIL_QUEUE,
+    exchangeConfig: ExchangeDefinitions.NOTIFICATION_EXCHANGE,
+    queueConfig: QueueDefinitions.NOTIFICATION_EMAIL_QUEUE,
     bindingKey: BindingKeys.EMAIL_WORKER_BK
 }
 ```
+
+The specified queue is bound to the given exchange using the provided bindingKey pattern for routing incoming messages.
+
+- exchangeConfig: Exchange schema worker listens to
+- queueConfig: Queue schema this worker consumes from. if left blank, anonymous queue is used automatically.
+- bindingKey: The routing key pattern used for message filtering
 
 ## Caveats
 
