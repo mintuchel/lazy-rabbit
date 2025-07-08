@@ -1,11 +1,6 @@
 import { Channel, Message } from 'amqplib';
 import { ExchangeType } from '../constants/exchange';
-
-export interface MessageBrokerConfig {
-    MSG_QUEUE_URL: string;
-    HEARTBEAT_INTERVAL_MS?: number;
-}
-
+ 
 /**
  * Configuration for AMQP exchange
  */
